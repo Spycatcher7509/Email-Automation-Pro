@@ -175,6 +175,8 @@ button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2
 @media (max-width: 968px) { .grid { grid-template-columns: 1fr; } .floating-dictation { bottom: 20px; right: 20px; } .floating-dictation-button { width: 60px; height: 60px; } }
 .auth-frame { width: 100%; min-height: 520px; border: 1px solid #e0e4f2; border-radius: 16px; background: white; }
 .auth-form { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.exit-button { margin-top:12px; padding:12px 16px; border:none; border-radius:10px; background:#1f2937; color:#fff; font-weight:700; cursor:pointer; }
+.exit-button:hover { background:#111827; }
 .auth-form.login-plain input,
 .auth-form.login-plain textarea,
 .auth-form.login-plain label {
@@ -318,6 +320,7 @@ button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2
           <a href="#" id="gateReset">Forgot password?</a>
         </div>
       </div>
+      <button id="gateExit" class="exit-button" type="button">Exit</button>
     </div>
   </div>
 </div>
@@ -590,6 +593,7 @@ button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2
         </div>
         <div style="margin-top:12px; background:#0f172a; color:#e2e8f0; padding:12px; border-radius:10px; min-height:80px;" id="pqcDecryptOut">Output will appear here.</div>
       </div>
+      <button class="exit-button" onclick="window.close()">Exit Application</button>
     </div>
 
     <div id="workflows-tab" class="tab-content">
@@ -817,6 +821,9 @@ function initGate() {
     e.preventDefault();
     alert('Password reset emails are sent via the Reset Password panel after login.');
   });
+
+  const gateExit = document.getElementById('gateExit');
+  gateExit?.addEventListener('click', () => window.close());
 }
 
 // User Guide overlay
