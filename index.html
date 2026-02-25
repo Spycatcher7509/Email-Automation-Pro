@@ -1638,10 +1638,14 @@ function initMediaTranscribe() {
   ytBtn.addEventListener('click', async () => {
     const url = ytInput?.value?.trim();
     if (!url) { alert('Enter a YouTube URL'); return; }
-    resultBox.value = 'Transcribing YouTube...';
+    resultBox.value = 'Checking yt-dlp (downloading if missing)...';
     try {
       const res = await window.electronAPI.transcribeYoutube({ url, model: 'large' });
-      resultBox.value = res.text || res.result || JSON.stringify(res);
+      const meta = [];
+      if (res.ytVersion) meta.push(`yt-dlp ${res.ytVersion}`);
+      if (res.ytDownloaded) meta.push('downloaded');
+      const metaStr = meta.length ? `\n[${meta.join(' · ')}]` : '';
+      resultBox.value = (res.text || res.result || JSON.stringify(res)) + metaStr;
     } catch (err) {
       resultBox.value = '❌ ' + (err?.message || err);
     }

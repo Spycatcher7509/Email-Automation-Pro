@@ -93,24 +93,39 @@ function fileExists(p) {
 
 function downloadYtDlpIfNeeded() {
   return new Promise((resolve, reject) => {
-    if (fileExists(YTDLP_LOCAL)) return resolve(YTDLP_LOCAL);
+    if (fileExists(YTDLP_LOCAL)) return resolve({ binary: YTDLP_LOCAL, downloaded: false });
     const url = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp';
     const file = fs.createWriteStream(YTDLP_LOCAL, { mode: 0o755 });
     https.get(url, (res) => {
       if (res.statusCode !== 200) return reject(new Error(`yt-dlp download failed: ${res.statusCode}`));
       res.pipe(file);
-      file.on('finish', () => file.close(() => resolve(YTDLP_LOCAL)));
+      file.on('finish', () => file.close(() => resolve({ binary: YTDLP_LOCAL, downloaded: true })));
     }).on('error', (err) => reject(err));
   });
 }
 
 async function ensureYtDlp() {
-  const r = spawnSync('yt-dlp', ['--version'], { encoding: 'utf8' });
-  if (!r.error && r.status === 0) return 'yt-dlp';
-  // try local cached binary
-  if (fileExists(YTDLP_LOCAL)) return YTDLP_LOCAL;
-  await downloadYtDlpIfNeeded();
-  return YTDLP_LOCAL;
+  let downloaded = false;
+  let binary = 'yt-dlp';
+  let version = '';
+
+  let r = spawnSync(binary, ['--version'], { encoding: 'utf8' });
+  if (r.error || r.status !== 0) {
+    if (fileExists(YTDLP_LOCAL)) {
+      binary = YTDLP_LOCAL;
+    } else {
+      const dl = await downloadYtDlpIfNeeded();
+      binary = dl.binary;
+      downloaded = dl.downloaded;
+    }
+    r = spawnSync(binary, ['--version'], { encoding: 'utf8' });
+  }
+
+  if (r.error || r.status !== 0) {
+    throw new Error('yt-dlp unavailable (install via brew or check network).');
+  }
+  version = (r.stdout || '').trim();
+  return { binary, version, downloaded };
 }
 
 /* ───────────────── ELECTRON ───────────────── */
@@ -725,7 +740,8 @@ ipcMain.handle('transcribe-file', async (_, { filePath, model }) => {
 
 ipcMain.handle('transcribe-youtube', async (_, { url, model }) => {
   if (!url) throw new Error('url required');
-  const ytBinary = await ensureYtDlp();
+  const ytInfo = await ensureYtDlp();
+  const ytBinary = ytInfo.binary;
   const tmpDir = await fsp.mkdtemp(path.join(require('os').tmpdir(), 'yt-audio-'));
   const outFile = path.join(tmpDir, 'audio.mp3');
   // Require yt-dlp on PATH
@@ -744,9 +760,11 @@ ipcMain.handle('transcribe-youtube', async (_, { url, model }) => {
       target: url,
       text: res.text || '',
       gb_datetime: formatGbDateTime(),
+      yt_version: ytInfo.version,
+      yt_downloaded: ytInfo.downloaded,
     });
     await saveMediaLog(log);
-    return res;
+    return { ...res, ytVersion: ytInfo.version, ytDownloaded: ytInfo.downloaded };
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
