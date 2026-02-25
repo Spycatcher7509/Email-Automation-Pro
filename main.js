@@ -25,6 +25,8 @@ const FOLDER_PAIRS_PATH = path.join(DATA_DIR, 'folder-pairs.json');
 const SETTINGS_PATH = path.join(DATA_DIR, 'settings.json');
 const HYBRID_KEYS_PATH = path.join(DATA_DIR, 'hybrid-keys.json');
 const RECIPIENT_KEYS_PATH = path.join(DATA_DIR, 'recipient-keys.json');
+const CHECKSUM_LOG_PATH = path.join(DATA_DIR, 'checksums-log.json');
+const CHECKSUM_LOG_PATH = path.join(DATA_DIR, 'checksums-log.json');
 const LOG_EMAIL = 'notification@thewrightsupport.com';
 const RESET_FROM = process.env.SENDGRID_FROM || 'no-reply@mail.yourparadigm.co.uk';
 const RESET_URL_BASE = process.env.RESET_URL_BASE || '';
@@ -45,6 +47,31 @@ let settings = { emailErrorLogs: true };
 const resetTokens = new Map(); // token -> { email, expiresAt }
 let pqcProxyProcess = null;
 let recipientKeys = []; // [{ email, kem_public }]
+
+function formatGbDateTime() {
+  const now = new Date();
+  return now.toLocaleString('en-GB', {
+    timeZone: 'Europe/London',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+}
+
+async function loadChecksumLog() {
+  try {
+    return JSON.parse(await fsp.readFile(CHECKSUM_LOG_PATH, 'utf8'));
+  } catch {
+    return [];
+  }
+}
+
+async function saveChecksumLog(entries) {
+  await fsp.writeFile(CHECKSUM_LOG_PATH, JSON.stringify(entries, null, 2));
+}
 
 /* ───────────────── ELECTRON ───────────────── */
 
@@ -579,6 +606,25 @@ ipcMain.handle('save-recipient-key', async (_, entry) => {
   await saveRecipientKeys();
   logInfo(`Saved recipient PQ key for ${email}`);
   return recipientKeys;
+});
+
+ipcMain.handle('compute-checksum', async (_, filePath) => {
+  if (!filePath) throw new Error('filePath required');
+  const data = await fsp.readFile(filePath);
+  const hash = crypto.createHash('sha256').update(data).digest('hex');
+  const entries = await loadChecksumLog();
+  entries.push({
+    file: path.basename(filePath),
+    path: filePath,
+    sha256: hash,
+    gb_datetime: formatGbDateTime(),
+  });
+  await saveChecksumLog(entries);
+  return { sha256: hash };
+});
+
+ipcMain.handle('get-checksum-log', async () => {
+  return await loadChecksumLog();
 });
 
 ipcMain.handle('transcribe-audio', async (_, options) => {

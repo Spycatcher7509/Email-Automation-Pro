@@ -36,5 +36,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveRecipientKey: (entry) => ipcRenderer.invoke('save-recipient-key', entry),
 
   // PQC decrypt
-  decryptEnvelope: (paths) => ipcRenderer.invoke('decrypt-envelope', paths)
+  decryptEnvelope: (paths) => ipcRenderer.invoke('decrypt-envelope', paths),
+
+  // Checksums
+  computeChecksum: (filePath) => ipcRenderer.invoke('compute-checksum', filePath),
+  getChecksumLog: () => ipcRenderer.invoke('get-checksum-log')
 });

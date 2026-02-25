@@ -343,6 +343,7 @@ button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2
       <button class="tab" onclick="switchTab('schedules')">📋 Schedules</button>
       <button class="tab" onclick="switchTab('workflows')">🧭 Workflows</button>
       <button class="tab" onclick="switchTab('speakers')">🎙️ Speakers</button>
+      <button class="tab" onclick="switchTab('database')">🗂️ Database</button>
       <button class="tab" onclick="switchTab('folders')">📁 Folders</button>
       <button class="tab" onclick="switchTab('access')">🔐 Access</button>
       <button class="tab" onclick="switchTab('pqc')">🛡️ PQC Keys</button>
@@ -401,6 +402,31 @@ button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2
           </div>
         </div>
       </div>
+    </div>
+
+    <div id="database-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header"><div class="card-icon">🗂️</div><h2 class="card-title">Checksum Log</h2></div>
+        <p style="color:#4b5567; line-height:1.6;">Compute SHA-256 for a file and store it with GB date/time for future verification.</p>
+        <div class="access-actions" style="margin: 6px 0 12px;">
+          <button id="checksumPick" class="secondary">📂 Choose File</button>
+          <button id="checksumRefresh" class="outline">🔄 Refresh</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:14px;" id="checksumTable">
+            <thead>
+              <tr style="background:#f7f7fb; color:#1b2a6b;">
+                <th style="text-align:left; padding:8px; border-bottom:1px solid #e4e7f3;">File</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid #e4e7f3;">SHA-256</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid #e4e7f3;">GB Date/Time</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid #e4e7f3;">Path</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <button class="exit-button" onclick="window.close()">Exit Application</button>
     </div>
 
     <div id="single-tab" class="tab-content">
@@ -898,6 +924,7 @@ function initApp() {
   initSingleSend();
   initPqcKeys();
   initPqcDecrypt();
+  initChecksumPanel();
 }
 
 // DICTATION SYSTEM - Using Python + Whisper
@@ -1490,6 +1517,55 @@ function initPqcDecrypt() {
       out.textContent = '❌ ' + (err?.message || err);
     }
   });
+}
+
+function initChecksumPanel() {
+  const pickBtn = document.getElementById('checksumPick');
+  const refreshBtn = document.getElementById('checksumRefresh');
+  const tableBody = document.querySelector('#checksumTable tbody');
+  if (!pickBtn || !tableBody) return;
+
+  async function loadLog() {
+    const entries = await window.electronAPI.getChecksumLog();
+    tableBody.textContent = '';
+    if (!entries || entries.length === 0) {
+      const row = document.createElement('tr');
+      const cell = document.createElement('td');
+      cell.colSpan = 4;
+      cell.textContent = 'No checksum entries yet.';
+      cell.style.padding = '10px';
+      row.appendChild(cell);
+      tableBody.appendChild(row);
+      return;
+    }
+    entries.slice().reverse().forEach((e) => {
+      const row = document.createElement('tr');
+      [e.file, e.sha256, e.gb_datetime, e.path].forEach((val) => {
+        const cell = document.createElement('td');
+        cell.style.padding = '8px';
+        cell.style.borderBottom = '1px solid #eceff6';
+        cell.textContent = val || '';
+        row.appendChild(cell);
+      });
+      tableBody.appendChild(row);
+    });
+  }
+
+  pickBtn.addEventListener('click', async () => {
+    const files = await window.electronAPI.pickFiles();
+    if (!files || !files[0]) return;
+    const target = files[0];
+    try {
+      await window.electronAPI.computeChecksum(target);
+      await loadLog();
+      alert('✅ Checksum saved with GB date/time.');
+    } catch (err) {
+      alert('❌ Failed to compute checksum: ' + (err?.message || err));
+    }
+  });
+
+  refreshBtn?.addEventListener('click', loadLog);
+  loadLog();
 }
 
 // FOLDER MANAGEMENT
