@@ -27,7 +27,6 @@ const HYBRID_KEYS_PATH = path.join(DATA_DIR, 'hybrid-keys.json');
 const RECIPIENT_KEYS_PATH = path.join(DATA_DIR, 'recipient-keys.json');
 const CHECKSUM_LOG_PATH = path.join(DATA_DIR, 'checksums-log.json');
 const MEDIA_LOG_PATH = path.join(DATA_DIR, 'media-log.json');
-const CHECKSUM_LOG_PATH = path.join(DATA_DIR, 'checksums-log.json');
 const LOG_EMAIL = 'notification@thewrightsupport.com';
 const RESET_FROM = process.env.SENDGRID_FROM || 'no-reply@mail.yourparadigm.co.uk';
 const RESET_URL_BASE = process.env.RESET_URL_BASE || '';
