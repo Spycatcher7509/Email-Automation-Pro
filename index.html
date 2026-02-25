@@ -529,6 +529,27 @@ button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2
       </div>
     </div>
 
+    <div id="speakers-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header"><div class="card-icon">🎙️</div><h2 class="card-title">Automatic Speaker Recognition</h2></div>
+        <p style="color:#4b5567; line-height:1.6;">Use speaker grouping with WhisperKit-capable models or cloud providers (ElevenLabs, Deepgram). Not available in Dictation or Transcribe Podcast.</p>
+        <div style="display:grid; gap:16px; grid-template-columns: repeat(auto-fit,minmax(240px,1fr));">
+          <div class="access-field" style="background:#eef2ff;"><strong>Pick a supported model</strong><p style="margin-top:6px;color:#4b5567;">Choose WhisperKit (shows Speaker Recognition badge) or cloud with speaker support.</p></div>
+          <div class="access-field" style="background:#ecfeff;"><strong>Auto-group speakers</strong><p style="margin-top:6px;color:#4b5567;">Transcript is tagged Speaker 1/2/etc; rename after the run.</p></div>
+          <div class="access-field" style="background:#fef3c7;"><strong>Merge & rename fast</strong><p style="margin-top:6px;color:#4b5567;">Right-click to merge speakers; click name to edit; use number shortcuts (1/2/3) to reassign segments.</p></div>
+          <div class="access-field" style="background:#e0f2fe;"><strong>Colors & favorites</strong><p style="margin-top:6px;color:#4b5567;">Change colors; autofill common speaker names from suggestions.</p></div>
+        </div>
+        <div class="card" style="margin-top:14px;">
+          <div class="card-header"><div class="card-icon">⚠️</div><h2 class="card-title">Notes</h2></div>
+          <ul style="color:#4b5567; line-height:1.7; margin-left:18px;">
+            <li>Works only with WhisperKit models or supported cloud providers.</li>
+            <li>Not supported in Dictation (single speaker) or Transcribe Podcast (per-track speakers).</li>
+            <li>Rename speakers post-run to keep transcripts clean.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
     <div id="pqc-tab" class="tab-content">
       <div class="card">
         <div class="card-header"><div class="card-icon">🛡️</div><h2 class="card-title">Recipient PQ Keys</h2></div>
@@ -927,7 +948,7 @@ function initDictation() {
     window.APP.isListening = true;
     floatBtn.classList.add('listening');
     floatLabel.classList.add('listening');
-    floatLabel.textContent = '🎤 Listening for 5 seconds...';
+    floatLabel.textContent = '🎤 Listening for 15 seconds...';
     
     try {
       // Call Python + Whisper transcription
