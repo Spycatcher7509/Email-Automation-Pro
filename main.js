@@ -241,7 +241,26 @@ async function checkSchedules() {
 
 /* ───────────────── EMAIL ───────────────── */
 
+async function ensureAuth() {
+  if (!authClient) {
+    authClient = await authorise();
+    return;
+  }
+  if (authClient.isTokenExpiring && authClient.isTokenExpiring()) {
+    try {
+      const { credentials } = await authClient.refreshAccessToken();
+      authClient.setCredentials(credentials);
+      await fsp.writeFile(TOKEN_PATH, JSON.stringify(credentials, null, 2));
+      logInfo('Refreshed OAuth token');
+    } catch (err) {
+      logWarn(`Token refresh failed, reauth: ${err.message}`);
+      authClient = await authorise();
+    }
+  }
+}
+
 async function sendEmail({ recipient, subject, body, files }) {
+  await ensureAuth();
   const gmail = google.gmail({ version: 'v1', auth: authClient });
   const secureHybrid = arguments[0]?.secureHybrid === true;
   let hybridEnvelope = null;
@@ -321,9 +340,21 @@ async function sendEmail({ recipient, subject, body, files }) {
     .toString('base64')
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-  await gmail.users.messages.send({ userId: 'me', requestBody: { raw } });
-
-  logInfo(`Email sent to ${recipient} with ${files.length} attachment(s)`);
+  try {
+    await gmail.users.messages.send({ userId: 'me', requestBody: { raw } });
+    logInfo(`Email sent to ${recipient} with ${files.length} attachment(s)`);
+  } catch (err) {
+    // If unauthorized, force re-auth once
+    if (err?.code === 401 || err?.code === 403) {
+      logWarn(`Gmail auth error (${err.code}), reauthorising…`);
+      authClient = await authorise();
+      const gmailRetry = google.gmail({ version: 'v1', auth: authClient });
+      await gmailRetry.users.messages.send({ userId: 'me', requestBody: { raw } });
+      logInfo(`Email sent (after reauth) to ${recipient} with ${files.length} attachment(s)`);
+    } else {
+      throw err;
+    }
+  }
 }
 
 /* ───────────────── HYBRID ENVELOPE (placeholder: classical + ready for PQ) ───────────────── */

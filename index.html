@@ -175,6 +175,17 @@ button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2
 @media (max-width: 968px) { .grid { grid-template-columns: 1fr; } .floating-dictation { bottom: 20px; right: 20px; } .floating-dictation-button { width: 60px; height: 60px; } }
 .auth-frame { width: 100%; min-height: 520px; border: 1px solid #e0e4f2; border-radius: 16px; background: white; }
 .auth-form { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.auth-form.login-plain input,
+.auth-form.login-plain textarea,
+.auth-form.login-plain label {
+  color: #111827 !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+.auth-form.login-plain input::placeholder,
+.auth-form.login-plain textarea::placeholder {
+  color: #6b7280 !important;
+}
 .link-button { background: transparent; color: #1b2a6b; border: none; padding: 0; margin: 0; font-weight: 700; cursor: pointer; text-decoration: underline; }
 .access-hero { background: radial-gradient(120% 120% at 20% 0%, rgba(212,175,55,0.18), transparent 55%), linear-gradient(135deg, #0e1430 0%, #141b35 45%, #1a2140 100%); color: #f7f6f0; border-radius: 24px; padding: 34px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 30px 70px rgba(7, 10, 25, 0.6); position: relative; overflow: hidden; }
 .access-hero::after { content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(212,175,55,0.25), transparent 60%); }
@@ -447,18 +458,18 @@ button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2
           <div class="gold-rule"></div>
           <div class="access-title">Enter the Email Automation Pro</div>
           <div class="access-sub">Protected access to your automation suite. Verified domain: mail.yourparadigm.co.uk</div>
-          <div class="access-panel" style="margin-top: 18px;">
-            <div class="card-header" style="border-bottom: 1px solid #eceff8;">
-              <div class="card-icon">🔐</div>
-              <h2 class="card-title">Login</h2>
-              <div class="access-badge" style="margin-left: auto;"><span>●</span> Secure Session</div>
+        <div class="access-panel" style="margin-top: 18px;">
+          <div class="card-header" style="border-bottom: 1px solid #eceff8;">
+            <div class="card-icon">🔐</div>
+            <h2 class="card-title">Login</h2>
+            <div class="access-badge" style="margin-left: auto;"><span>●</span> Secure Session</div>
+          </div>
+          <div class="auth-form login-plain">
+            <div class="access-field">
+              <label>Email</label>
+              <input id="loginEmail" type="email" placeholder="you@mail.yourparadigm.co.uk">
             </div>
-            <div class="auth-form">
-              <div class="access-field">
-                <label>Email</label>
-                <input id="loginEmail" type="email" placeholder="you@mail.yourparadigm.co.uk">
-              </div>
-              <div class="access-field">
+            <div class="access-field">
                 <label>Password</label>
                 <input id="loginPassword" type="password" placeholder="••••••••">
               </div>
@@ -486,7 +497,7 @@ button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2
         <div class="access-iframe-wrap">
           <div class="access-iframe-title">Sign Up</div>
           <div class="access-iframe-sub">Join the Royal Signal network in seconds.</div>
-          <iframe class="auth-frame" src="https://cdn.forms-content.sg-form.com/b8a41866-f65e-11f0-8cef-eed28ae32f5b" title="Sign Up"></iframe>
+          <iframe class="auth-frame" src="https://cdn.forms-content.sg-form.com/b8a41866-f65e-11f0-8cef-eed28ae32f5b" title="Sign Up" style="background:#fff;color:#111;"></iframe>
         </div>
       </div>
     </div>
