@@ -1,5 +1,8 @@
 'use strict';
 
+// Load environment variables from .env if present
+try { require('dotenv').config(); } catch (_) {}
+
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const { google } = require('googleapis');
 const { spawn } = require('child_process');

@@ -186,6 +186,25 @@ button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2
 .auth-form.login-plain textarea::placeholder {
   color: #6b7280 !important;
 }
+#loginOverlay input, #loginOverlay textarea {
+  color: #111827 !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+#loginOverlay input::placeholder, #loginOverlay textarea::placeholder {
+  color: #6b7280 !important;
+}
+.auth-form.login-plain input,
+.auth-form.login-plain textarea,
+.auth-form.login-plain label {
+  color: #111827 !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+.auth-form.login-plain input::placeholder,
+.auth-form.login-plain textarea::placeholder {
+  color: #6b7280 !important;
+}
 .link-button { background: transparent; color: #1b2a6b; border: none; padding: 0; margin: 0; font-weight: 700; cursor: pointer; text-decoration: underline; }
 .access-hero { background: radial-gradient(120% 120% at 20% 0%, rgba(212,175,55,0.18), transparent 55%), linear-gradient(135deg, #0e1430 0%, #141b35 45%, #1a2140 100%); color: #f7f6f0; border-radius: 24px; padding: 34px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 30px 70px rgba(7, 10, 25, 0.6); position: relative; overflow: hidden; }
 .access-hero::after { content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(212,175,55,0.25), transparent 60%); }
@@ -913,8 +932,8 @@ function initDictation() {
     try {
       // Call Python + Whisper transcription
       const result = await window.electronAPI.transcribeAudio({ 
-        duration: 5,  // Record for 5 seconds
-        model: 'base' // Options: tiny, base, small, medium, large
+        duration: 15,  // Record for 15 seconds
+        model: 'large' // Options: tiny, base, small, medium, large
       });
       
       if (result.success && result.text) {
@@ -1589,6 +1608,17 @@ async function openFolderPath(path) {
 // Initialize login gate once script loads
 initGate();
 initGuide();
+setTimeout(() => {
+  const overlayHidden = document.getElementById('disclaimerOverlay')?.classList.contains('hidden');
+  const main = document.getElementById('mainApp');
+  if (overlayHidden && main && main.style.display === 'none') {
+    main.style.display = 'block';
+    if (!APP_STARTED) {
+      APP_STARTED = true;
+      setTimeout(initApp, 100);
+    }
+  }
+}, 1200);
 </script>
 </body>
 </html>
