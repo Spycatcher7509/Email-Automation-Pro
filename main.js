@@ -669,6 +669,30 @@ ipcMain.handle('transcribe-audio', async (_, options) => {
   });
 });
 
+ipcMain.handle('transcribe-file', async (_, { filePath, model }) => {
+  if (!filePath) throw new Error('filePath required');
+  const res = await runTranscribeCommand({ action: 'transcribe_file', file: filePath, model: model || 'large' });
+  return res;
+});
+
+ipcMain.handle('transcribe-youtube', async (_, { url, model }) => {
+  if (!url) throw new Error('url required');
+  const tmpDir = await fsp.mkdtemp(path.join(require('os').tmpdir(), 'yt-audio-'));
+  const outFile = path.join(tmpDir, 'audio.mp3');
+  // Require yt-dlp on PATH
+  await new Promise((resolve, reject) => {
+    const dl = spawn('yt-dlp', ['-f', 'bestaudio', '--extract-audio', '--audio-format', 'mp3', '-o', outFile, url], { stdio: 'inherit' });
+    dl.on('error', reject);
+    dl.on('close', (code) => code === 0 ? resolve() : reject(new Error(`yt-dlp exited with ${code}`)));
+  });
+  try {
+    const res = await runTranscribeCommand({ action: 'transcribe_file', file: outFile, model: model || 'large' });
+    return res;
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
 ipcMain.handle('decrypt-envelope', async (_, { envelopePath, keysPath }) => {
   if (!envelopePath || !keysPath) throw new Error('envelopePath and keysPath are required');
   await ensurePqcProxy();

@@ -87,6 +87,35 @@ def transcribe_audio(audio_data, sample_rate, model_size='base', device='cpu', l
             os.remove(tmp_path)
 
 
+def transcribe_file(path, model_size='base', device='cpu', loaded_model=None):
+    """
+    Transcribe an existing audio file.
+    """
+    import whisper
+
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"File not found: {path}")
+
+    if loaded_model is not None:
+        model = loaded_model
+    else:
+        print(f"🔄 Loading Whisper model ({model_size}) on {device}...", file=sys.stderr)
+        model = whisper.load_model(model_size)
+        if device == "mps":
+            try:
+                model = model.to(device)
+                print("✅ Model loaded on Apple Silicon GPU", file=sys.stderr)
+            except Exception as e:
+                print(f"⚠️  GPU loading failed, falling back to CPU: {e}", file=sys.stderr)
+                model = model.to("cpu")
+        else:
+            model = model.to(device)
+
+    print("🔄 Transcribing file...", file=sys.stderr)
+    result = model.transcribe(path, language='en', fp16=False)
+    return result['text'].strip()
+
+
 def daemon_mode():
     """
     Persistent daemon: keeps the Whisper model in memory between transcription
@@ -94,6 +123,7 @@ def daemon_mode():
     to stdout.
 
     Input:  {"action": "transcribe", "duration": 5, "model": "base"}
+            {"action": "transcribe_file", "file": "/path/to/audio", "model": "base"}
     Output: {"success": true, "text": "..."} | {"success": false, "error": "..."}
     """
     import json
@@ -116,16 +146,10 @@ def daemon_mode():
             print(json.dumps({"success": False, "error": f"Invalid JSON: {e}"}), flush=True)
             continue
 
-        if command.get('action') != 'transcribe':
-            print(json.dumps({"success": False, "error": "Unknown action"}), flush=True)
-            continue
-
-        duration = command.get('duration', 5)
+        action = command.get('action')
         model_size = command.get('model', 'base')
 
         try:
-            audio_data, sample_rate = record_audio(duration=duration)
-
             if model_size not in model_cache:
                 print(f"🔄 Loading Whisper model ({model_size})...", file=sys.stderr)
                 device = get_device()
@@ -144,8 +168,20 @@ def daemon_mode():
                 print("✅ Model cached — subsequent calls will be faster", file=sys.stderr)
 
             model, _ = model_cache[model_size]
-            text = transcribe_audio(audio_data, sample_rate, loaded_model=model)
-            print(json.dumps({"success": True, "text": text}), flush=True)
+
+            if action == 'transcribe':
+                duration = command.get('duration', 5)
+                audio_data, sample_rate = record_audio(duration=duration)
+                text = transcribe_audio(audio_data, sample_rate, loaded_model=model)
+                print(json.dumps({"success": True, "text": text}), flush=True)
+            elif action == 'transcribe_file':
+                file_path = command.get('file')
+                if not file_path:
+                    raise ValueError("file path required")
+                text = transcribe_file(file_path, loaded_model=model)
+                print(json.dumps({"success": True, "text": text}), flush=True)
+            else:
+                print(json.dumps({"success": False, "error": "Unknown action"}), flush=True)
 
         except Exception as e:
             traceback.print_exc(file=sys.stderr)
@@ -164,6 +200,8 @@ def main():
     parser.add_argument('--device', type=str, default='auto',
                         choices=['auto', 'mps', 'cpu'],
                         help='Device to use: auto (detect), mps (Apple Silicon GPU), or cpu (default: auto)')
+    parser.add_argument('--file', type=str, default=None,
+                        help='Transcribe an existing audio file instead of recording')
     parser.add_argument('--daemon', action='store_true',
                         help='Run as persistent daemon (reads commands from stdin)')
 
@@ -174,6 +212,15 @@ def main():
         return
 
     try:
+        if args.file:
+            if args.device == 'auto':
+                device = get_device()
+            else:
+                device = args.device
+            text = transcribe_file(args.file, model_size=args.model, device=device)
+            print(text)
+            return
+
         # Record audio before loading heavy libraries to minimise perceived latency
         audio_data, sample_rate = record_audio(duration=args.duration)
 
