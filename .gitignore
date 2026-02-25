@@ -1,0 +1,47 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Builds / artifacts
+dist*/
+dist_decrypt/
+pqc-proxy/target/
+target/
+*.zip
+*.tar.gz
+*.dmg
+*.AppImage
+*.exe
+*.deb
+*.blockmap
+*.pkg
+*.asar
+
+# Python
+__pycache__/
+venv/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc generated
+build_env/
+ffmpeg_binaries/
+complete-standalone/
+updates/
+
+# Logs
+*.log
+
+# Backups
+*.bak
+
+build/transcribe_fixed/
+
+# Secrets
+Credentials*.json
+credentials*.json
+mobile-app/

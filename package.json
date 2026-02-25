@@ -1,0 +1,141 @@
+{
+  "name": "email-automation-pro",
+  "version": "1.0.0",
+  "description": "Professional email automation with scheduling, dictation, and smart file processing",
+  "main": "main.js",
+  "author": "Peter",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build-mac": "electron-builder --mac --x64 --arm64",
+    "build-mac-universal": "electron-builder --mac --universal",
+    "build-win": "electron-builder --win --x64",
+    "build-linux": "electron-builder --linux",
+    "build-all": "electron-builder -mwl",
+    "checksum": "node scripts/checksums.js",
+    "pack": "electron-builder --dir",
+    "postinstall": "electron-builder install-app-deps",
+    "build-standalone": "bash build-standalone.sh",
+    "decrypt": "node scripts/decrypt-cli.js"
+  },
+  "build": {
+    "appId": "com.emailautomation.pro",
+    "productName": "Email Automation Pro",
+    "copyright": "Copyright © 2026",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "preload.js",
+      "transcribe.py",
+      "requirements.txt",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "credentials.json",
+        "to": "credentials.json"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.icns",
+      "darkModeSupport": true,
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Please allow access to the microphone for voice transcription.",
+        "NSDocumentsFolderUsageDescription": "Please allow access to save transcriptions."
+      },
+      "type": "distribution",
+      "minimumSystemVersion": "11.0"
+    },
+    "dmg": {
+      "title": "Email Automation Pro",
+      "icon": "build/icon.icns",
+      "background": null,
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": "x64"
+        }
+      ],
+      "icon": "build/icon.ico",
+      "publisherName": "Email Automation Pro",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "afterSign": "scripts/after-sign.js",
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Email Automation Pro",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "deleteAppDataOnUninstall": false
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "build/icons"
+    },
+    "portable": {
+      "artifactName": "Email-Automation-Pro-Portable.exe"
+    }
+  },
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.4",
+    "googleapis": "^118.0.0"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "minimist": "^1.2.8"
+  }
+}

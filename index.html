@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email Automation Pro</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Manrope:wght@400;600;700&display=swap');
+
+:root {
+  --royal-navy: #0b1020;
+  --royal-blue: #1b2a6b;
+  --royal-indigo: #2c2f8a;
+  --royal-emerald: #0f9b8e;
+  --royal-gold: #d4af37;
+  --royal-crimson: #9b1c31;
+  --ink: #e6e8f2;
+  --ink-muted: #a7aec6;
+  --surface: #f7f6f3;
+  --surface-2: #eef0f7;
+  --surface-3: #ffffff;
+  --border: #e2e5f2;
+  --shadow: 0 24px 60px rgba(11, 16, 32, 0.28);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, rgba(212, 175, 55, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(15, 155, 142, 0.18), transparent 60%),
+    linear-gradient(160deg, var(--royal-navy) 0%, #121b35 45%, #161a2c 100%);
+  min-height: 100vh;
+  padding: 32px 22px 40px;
+  color: var(--ink);
+}
+/* Login Overlay */
+.login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(160deg, rgba(11,16,32,0.9) 0%, rgba(18,27,53,0.95) 100%); z-index: 9000; display: none; align-items: center; justify-content: center; padding: 24px; }
+.login-overlay.active { display: flex; }
+.login-card { width: min(480px, 92vw); background: #0f1328; border: 1px solid #1f2948; box-shadow: 0 28px 70px rgba(0,0,0,0.55); border-radius: 20px; padding: 28px; position: relative; overflow: hidden; }
+.login-card::after { content: ''; position: absolute; inset: -40% 50% auto auto; width: 220px; height: 220px; background: radial-gradient(circle, rgba(212,175,55,0.28), transparent 60%); transform: rotate(25deg); }
+.login-head { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.login-badge { padding: 6px 14px; border-radius: 999px; background: rgba(212,175,55,0.18); color: #f4d37a; font-weight: 700; letter-spacing: 0.4px; border: 1px solid rgba(212,175,55,0.35); }
+.login-title { font-family: 'Cinzel', serif; font-size: 26px; color: #f7f6f0; letter-spacing: 0.6px; }
+.login-sub { color: #c7cbe0; font-size: 13px; margin-bottom: 18px; }
+.login-form { display: grid; gap: 14px; position: relative; z-index: 1; }
+.login-form label { color: #cdd3eb; letter-spacing: 0.6px; }
+.login-form input { background: #131a34; border: 1px solid #27304f; color: #f7f7fb; }
+.login-form input:focus { border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.25); }
+.login-actions { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+.login-actions .links { display: flex; gap: 14px; }
+.login-links a { color: #d4af37; text-decoration: none; font-weight: 700; }
+.login-links a:hover { text-decoration: underline; }
+.login-button { width: 100%; background: linear-gradient(135deg, #0f9b8e 0%, #0c7f78 100%); color: #fff; border: none; padding: 14px 18px; border-radius: 12px; font-weight: 800; letter-spacing: 0.4px; cursor: pointer; box-shadow: 0 12px 30px rgba(15,155,142,0.4); }
+.login-button:hover { transform: translateY(-1px); }
+.signup-button { background: transparent; color: #d4af37; border: 1px solid rgba(212,175,55,0.45); padding: 12px 18px; border-radius: 12px; font-weight: 800; letter-spacing: 0.4px; cursor: pointer; }
+.guide-button { position: fixed; top: 20px; right: 24px; z-index: 8500; padding: 10px 16px; border-radius: 10px; background: linear-gradient(135deg, #1b2a6b 0%, #2c2f8a 100%); color: #f7f6f3; border: none; font-weight: 700; box-shadow: 0 10px 22px rgba(27,42,107,0.4); cursor: pointer; }
+.guide-overlay { position: fixed; inset: 0; background: rgba(6, 10, 24, 0.85); display: none; align-items: center; justify-content: center; z-index: 12000; padding: 24px; backdrop-filter: blur(4px); }
+.guide-overlay.active { display: flex; }
+.guide-panel { width: min(880px, 96vw); background: #0f1328; border-radius: 18px; border: 1px solid #1f2948; box-shadow: 0 32px 90px rgba(0,0,0,0.55); padding: 26px 26px 18px; color: #e8ecff; position: relative; }
+.guide-close { position: absolute; top: 14px; right: 14px; border: none; background: transparent; color: #c7cbe0; font-size: 20px; cursor: pointer; }
+.guide-title { font-family: 'Cinzel', serif; font-size: 24px; margin-bottom: 6px; }
+.guide-sub { color: #c7cbe0; font-size: 14px; margin-bottom: 16px; }
+.guide-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); }
+.guide-card { background: #131a34; border: 1px solid #27304f; border-radius: 12px; padding: 14px; }
+.guide-card h4 { margin-bottom: 6px; color: #f8f9ff; }
+.guide-card p { color: #c7cbe0; font-size: 14px; line-height: 1.5; }
+.guide-steps { margin-top: 10px; line-height: 1.6; color: #dfe4ff; }
+.guide-steps li { margin-left: 16px; margin-bottom: 6px; }
+
+/* Disclaimer Modal */
+.disclaimer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(800px 400px at 20% 0%, rgba(212,175,55,0.18), transparent 70%), linear-gradient(135deg, #0a1022 0%, #141b2f 100%); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.disclaimer-overlay.hidden { display: none; }
+.disclaimer-container { max-width: 760px; width: 100%; animation: slideUp 0.6s ease; }
+.disclaimer-header { background: linear-gradient(to right, #111a36, #1c2445); border-radius: 16px 16px 0 0; padding: 26px; border-bottom: 2px solid #2a3356; display: flex; gap: 16px; }
+.disclaimer-icon { width: 28px; height: 28px; color: var(--royal-gold); flex-shrink: 0; }
+.disclaimer-title { flex: 1; }
+.disclaimer-title h1 { font-size: 24px; font-weight: 700; letter-spacing: 0.3px; font-family: 'Cinzel', serif; color: #f8f7f0; margin-bottom: 4px; }
+.disclaimer-title p { font-size: 14px; color: #aab2cb; }
+.disclaimer-content { background: #111a33; padding: 32px; border-left: 2px solid #2a3356; border-right: 2px solid #2a3356; }
+.disclaimer-scroll { max-height: 320px; overflow-y: auto; padding-right: 16px; color: #d1d7ea; font-size: 14px; line-height: 1.8; }
+.disclaimer-scroll::-webkit-scrollbar { width: 8px; }
+.disclaimer-scroll::-webkit-scrollbar-track { background: #0b1226; border-radius: 4px; }
+.disclaimer-scroll::-webkit-scrollbar-thumb { background: #3b4366; border-radius: 4px; }
+.disclaimer-scroll strong { color: #f1f5f9; font-weight: 600; }
+.disclaimer-scroll ul { margin: 16px 0 16px 20px; list-style: disc; }
+.disclaimer-scroll li { margin: 12px 0; padding-left: 8px; }
+.disclaimer-checkboxes { background: #111a33; padding: 24px 32px; border-left: 2px solid #2a3356; border-right: 2px solid #2a3356; display: flex; flex-direction: column; gap: 16px; }
+.checkbox-label { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+.checkbox-label:hover .checkbox-text { color: #f7f7ff; }
+.checkbox-custom { appearance: none; width: 20px; height: 20px; border: 2px solid #6b7393; border-radius: 4px; cursor: pointer; transition: all 0.2s ease; background-color: transparent; flex-shrink: 0; }
+.checkbox-custom:hover { border-color: #9aa2be; background-color: rgba(154, 162, 190, 0.1); }
+.checkbox-custom:checked { background-color: var(--royal-emerald); border-color: var(--royal-emerald); background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E"); background-size: 80% 80%; background-position: center; background-repeat: no-repeat; }
+.checkbox-text { color: #cbd5e1; font-size: 15px; transition: color 0.2s ease; }
+.disclaimer-footer { background: #1c2445; border-radius: 0 0 16px 16px; padding: 24px 32px; border-top: 2px solid #2a3356; display: flex; gap: 12px; justify-content: flex-end; }
+.disclaimer-button { padding: 12px 28px; font-weight: 600; border-radius: 8px; transition: all 0.3s ease; cursor: pointer; border: none; font-size: 15px; font-family: inherit; }
+.disclaimer-button:disabled { opacity: 0.4; cursor: not-allowed; }
+.disclaimer-button.agree { background: linear-gradient(135deg, #12b981 0%, #0f9b8e 100%); color: white; box-shadow: 0 4px 12px rgba(18, 185, 129, 0.3); }
+.disclaimer-button.agree:not(:disabled):hover { background: linear-gradient(135deg, #0f9b8e 0%, #0c7f78 100%); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(18, 185, 129, 0.4); }
+.disclaimer-button.disagree { background: linear-gradient(135deg, #b2223a 0%, #8f1a2c 100%); color: white; box-shadow: 0 4px 12px rgba(178, 34, 58, 0.3); }
+.disclaimer-button.disagree:not(:disabled):hover { background: linear-gradient(135deg, #8f1a2c 0%, #701424 100%); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(178, 34, 58, 0.4); }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Main App Styles */
+.container { max-width: 1600px; margin: 0 auto; }
+.header { text-align: center; margin-bottom: 36px; }
+.header h1 { font-size: 46px; font-weight: 700; letter-spacing: 0.6px; font-family: 'Cinzel', serif; background: linear-gradient(140deg, #fdf9e8 0%, #d4af37 40%, #a0b7ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+.header p { color: var(--ink-muted); font-size: 16px; font-weight: 600; }
+.tabs { display: flex; gap: 12px; margin-bottom: 28px; background: rgba(255, 255, 255, 0.06); padding: 8px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); }
+.tab { flex: 1; padding: 14px 24px; border: none; background: transparent; color: var(--ink); font-size: 15px; font-weight: 700; cursor: pointer; border-radius: 14px; transition: all 0.3s ease; letter-spacing: 0.2px; }
+.tab.active { background: linear-gradient(135deg, #f9f6ea 0%, #ffffff 100%); color: #1b2a6b; box-shadow: 0 12px 22px rgba(10, 15, 30, 0.25); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+.card { background: linear-gradient(160deg, var(--surface-3) 0%, var(--surface) 100%); border-radius: 22px; padding: 30px; box-shadow: var(--shadow); margin-bottom: 24px; border: 1px solid var(--border); }
+.card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.card-icon { font-size: 26px; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: linear-gradient(135deg, #1b2a6b 0%, #2c2f8a 100%); border-radius: 12px; color: #f7f6f3; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+.card-title { font-size: 22px; font-weight: 700; color: #151a2f; font-family: 'Cinzel', serif; letter-spacing: 0.3px; }
+label { display: block; margin-bottom: 8px; font-weight: 700; color: #303652; font-size: 12px; text-transform: uppercase; letter-spacing: 0.9px; }
+input, textarea, select { width: 100%; padding: 14px 18px; border-radius: 14px; border: 2px solid var(--border); background: var(--surface-2); color: #151a2f; font-size: 15px; font-family: inherit; transition: all 0.3s ease; margin-bottom: 20px; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--royal-indigo); background: white; box-shadow: 0 0 0 4px rgba(44, 47, 138, 0.12); }
+textarea { resize: vertical; min-height: 120px; }
+.actions-row button { margin: 6px 8px 0 0; }
+button { padding: 14px 26px; border-radius: 14px; border: none; background: linear-gradient(135deg, #1b2a6b 0%, #2c2f8a 100%); color: #f7f6f3; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 12px 24px rgba(27, 42, 107, 0.35); margin: 5px; letter-spacing: 0.2px; }
+button:hover { transform: translateY(-2px); box-shadow: 0 16px 28px rgba(27, 42, 107, 0.45); }
+button.secondary { background: linear-gradient(135deg, #2c2f8a 0%, #4c3fa8 100%); }
+button.success { background: linear-gradient(135deg, #0f9b8e 0%, #0c7f78 100%); }
+button.danger { background: linear-gradient(135deg, #b2223a 0%, #8f1a2c 100%); }
+button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2a6b; box-shadow: none; }
+.files-container { margin-top: 20px; max-height: 300px; overflow-y: auto; }
+.file-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #f3f4f9; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e3e7f2; }
+.file-info { display: flex; align-items: center; gap: 12px; flex: 1; }
+.file-name { font-weight: 600; color: #151a2f; }
+.file-remove { padding: 6px 12px; font-size: 12px; background: #b2223a; border-radius: 8px; color: white; border: none; cursor: pointer; }
+.calendar-container { background: linear-gradient(160deg, var(--surface-3) 0%, var(--surface) 100%); border-radius: 22px; padding: 30px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.calendar-nav { display: flex; gap: 12px; align-items: center; }
+.calendar-month { font-size: 22px; font-weight: 700; color: #151a2f; min-width: 250px; text-align: center; font-family: 'Cinzel', serif; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 16px; }
+.calendar-day-header { text-align: center; padding: 12px; font-weight: 700; color: #5d678a; font-size: 13px; letter-spacing: 0.2px; }
+.calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; padding: 8px; border-radius: 14px; background: #f4f5fb; border: 1px solid #dfe3f1; cursor: pointer; transition: all 0.2s ease; position: relative; font-weight: 700; font-size: 15px; color: #2b3354; }
+.calendar-day:hover { border-color: #1b2a6b; background: #ffffff; transform: scale(1.04); }
+.calendar-day.other-month { opacity: 0.3; pointer-events: none; }
+.calendar-day.today { background: linear-gradient(135deg, #1b2a6b 0%, #2c2f8a 100%); color: #fefcf7; border-color: #1b2a6b; }
+.calendar-day.has-event::after { content: ''; position: absolute; bottom: 4px; width: 6px; height: 6px; background: var(--royal-gold); border-radius: 50%; }
+.schedule-list { margin-top: 20px; }
+.schedule-item { background: linear-gradient(135deg, #f7f7fb 0%, #eef0f7 100%); border-radius: 14px; padding: 20px; margin-bottom: 16px; border-left: 4px solid #1b2a6b; }
+.schedule-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.schedule-title { font-size: 17px; font-weight: 700; color: #151a2f; }
+.schedule-badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; background: linear-gradient(135deg, #0f9b8e 0%, #0c7f78 100%); color: white; }
+.schedule-badge.future { background: linear-gradient(135deg, #d4af37 0%, #b88923 100%); color: #1b1b1b; }
+.schedule-details { color: #5b6282; font-size: 14px; line-height: 1.6; margin-bottom: 12px; }
+.empty-state { text-align: center; padding: 60px 20px; color: #8b93b1; }
+.empty-state-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
+.setting-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px; border-radius: 14px; background: #f2f4fb; border: 1px solid #e0e4f2; margin-top: 12px; }
+.setting-title { font-weight: 700; color: #1d2440; font-size: 14px; }
+.setting-desc { font-size: 12px; color: #5e6787; margin-top: 4px; }
+.toggle { width: 54px; height: 30px; background: #cfd6eb; border-radius: 999px; position: relative; cursor: pointer; transition: all 0.2s ease; flex-shrink: 0; }
+.toggle::after { content: ''; width: 24px; height: 24px; background: white; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: all 0.2s ease; box-shadow: 0 4px 8px rgba(0,0,0,0.18); }
+.toggle.active { background: linear-gradient(135deg, #0f9b8e 0%, #0c7f78 100%); }
+.toggle.active::after { left: 27px; }
+
+/* Floating Dictation Button */
+.floating-dictation { position: fixed !important; bottom: 30px !important; right: 30px !important; z-index: 2147483647 !important; display: none; flex-direction: column; align-items: center; gap: 12px; pointer-events: auto !important; }
+.floating-dictation.active { display: flex !important; animation: slideInUp 0.3s ease-out; }
+.floating-dictation-button { width: 72px !important; height: 72px !important; border-radius: 50% !important; background: linear-gradient(135deg, #1b2a6b 0%, #2c2f8a 100%) !important; border: none !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 10px 24px rgba(27, 42, 107, 0.45) !important; position: relative !important; }
+.floating-dictation-button:hover { transform: scale(1.08); box-shadow: 0 16px 36px rgba(27, 42, 107, 0.6); }
+.floating-dictation-button.listening { background: linear-gradient(135deg, #b2223a 0%, #8f1a2c 100%); animation: pulse 1.5s ease-in-out infinite; }
+.floating-dictation-button svg { width: 50px !important; height: 50px !important; color: white !important; stroke-width: 3 !important; }
+.floating-dictation-label { background: rgba(12, 16, 34, 0.85); color: #f8f6f0; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35); white-space: nowrap; }
+.floating-dictation-label.listening { background: linear-gradient(135deg, #b2223a 0%, #8f1a2c 100%); color: white; animation: pulse 1.5s ease-in-out infinite; }
+.floating-dictation-target { background: rgba(12, 16, 34, 0.85); padding: 6px 14px; border-radius: 8px; font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; }
+@keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } }
+@media (max-width: 968px) { .grid { grid-template-columns: 1fr; } .floating-dictation { bottom: 20px; right: 20px; } .floating-dictation-button { width: 60px; height: 60px; } }
+.auth-frame { width: 100%; min-height: 520px; border: 1px solid #e0e4f2; border-radius: 16px; background: white; }
+.auth-form { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.link-button { background: transparent; color: #1b2a6b; border: none; padding: 0; margin: 0; font-weight: 700; cursor: pointer; text-decoration: underline; }
+.access-hero { background: radial-gradient(120% 120% at 20% 0%, rgba(212,175,55,0.18), transparent 55%), linear-gradient(135deg, #0e1430 0%, #141b35 45%, #1a2140 100%); color: #f7f6f0; border-radius: 24px; padding: 34px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 30px 70px rgba(7, 10, 25, 0.6); position: relative; overflow: hidden; }
+.access-hero::after { content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(212,175,55,0.25), transparent 60%); }
+.access-title { font-family: 'Cinzel', serif; font-size: 28px; letter-spacing: 0.8px; margin-bottom: 6px; }
+.access-sub { color: #c7cbe0; font-size: 13px; letter-spacing: 0.3px; margin-bottom: 20px; }
+.access-seal { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: rgba(212,175,55,0.15); color: #f4d37a; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; border: 1px solid rgba(212,175,55,0.35); text-transform: uppercase; }
+.gold-rule { height: 2px; width: 80px; background: linear-gradient(90deg, transparent, #d4af37, transparent); margin: 14px 0 18px; }
+.access-panel { background: #ffffff; border-radius: 22px; border: 1px solid #e2e5f2; box-shadow: 0 24px 60px rgba(18, 24, 45, 0.2); padding: 28px; }
+.access-split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; }
+.access-field { background: #f3f4fb; border-radius: 14px; padding: 12px 14px; border: 1px solid #e0e4f2; }
+.access-field input { margin: 0; border: none; background: transparent; padding: 0; }
+.access-field:focus-within { border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.2); }
+.access-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.access-note { font-size: 12px; color: #616a89; }
+.access-badge { background: #141b35; color: #f7f6f0; border-radius: 12px; padding: 8px 10px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
+.access-badge span { color: #d4af37; }
+.access-iframe-wrap { background: #ffffff; border-radius: 22px; border: 1px solid #e2e5f2; padding: 14px; box-shadow: 0 24px 60px rgba(18, 24, 45, 0.2); }
+.access-iframe-title { font-family: 'Cinzel', serif; font-size: 18px; color: #151a2f; margin-bottom: 8px; }
+.access-iframe-sub { font-size: 12px; color: #616a89; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<div id="disclaimerOverlay" class="disclaimer-overlay">
+  <div class="disclaimer-container">
+    <div class="disclaimer-header">
+      <svg class="disclaimer-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      <div class="disclaimer-title"><h1>Software Disclaimer</h1><p>Please review and accept the terms before using this application</p></div>
+    </div>
+    <div class="disclaimer-content">
+      <div class="disclaimer-scroll">
+        <p><strong>Important Legal Notice:</strong> This software is provided "as is" without warranty of any kind, express or implied.</p>
+        <p>By using this application, you acknowledge that:</p>
+        <ul>
+          <li>You use this software at your own risk and discretion.</li>
+          <li>The developers are not liable for any damages, data loss, or issues arising from its use.</li>
+          <li>You are responsible for backing up your data and maintaining system security.</li>
+          <li>Usage must comply with all applicable laws and regulations.</li>
+          <li>This software may be modified or discontinued at any time without notice.</li>
+          <li>You agree not to reverse engineer, decompile, or reproduce the software.</li>
+        </ul>
+        <p style="padding-top: 16px;">For detailed information regarding your use of this software, please consult the full license agreement included with this distribution.</p>
+      </div>
+    </div>
+    <div class="disclaimer-checkboxes">
+      <label class="checkbox-label"><input type="checkbox" class="checkbox-custom" id="agreeCheckbox"><span class="checkbox-text">I agree to the terms and conditions</span></label>
+      <label class="checkbox-label"><input type="checkbox" class="checkbox-custom" id="disagreeCheckbox"><span class="checkbox-text">I do not agree and wish to exit</span></label>
+    </div>
+    <div class="disclaimer-footer">
+      <button id="disagreeBtn" class="disclaimer-button disagree" disabled>Exit Application</button>
+      <button id="agreeBtn" class="disclaimer-button agree" disabled>Continue</button>
+    </div>
+  </div>
+</div>
+
+<button id="guideBtn" class="guide-button">📘 User Guide</button>
+
+<div id="guideOverlay" class="guide-overlay">
+  <div class="guide-panel">
+    <button id="guideClose" class="guide-close" aria-label="Close guide">✕</button>
+    <div class="guide-title">Quick Start (for 20-year-olds)</div>
+    <div class="guide-sub">Everything you need in 60 seconds: build trust, avoid spam, and ship emails safely.</div>
+    <div class="guide-grid">
+      <div class="guide-card">
+        <h4>1) Set your sender</h4>
+        <p>Open the Access tab, log in, and confirm your sender address. Keep it real: yourname@yourdomain.com.</p>
+      </div>
+      <div class="guide-card">
+        <h4>2) Single vs Recurring</h4>
+        <p>Use Single Send for one-offs. Use Compose → Recurring to drip updates (daily/weekly). Space sends 5–10 mins apart.</p>
+      </div>
+      <div class="guide-card">
+        <h4>3) Files & Limits</h4>
+        <p>Add up to 3 files per email. Large? Zip first. Use Folder Pairs to auto-pick new files on certain weekdays.</p>
+      </div>
+      <div class="guide-card">
+        <h4>4) Safety</h4>
+        <p>Always test-send to yourself. Check the checksum file before installing updates. Don’t send creds or secrets.</p>
+      </div>
+    </div>
+    <ol class="guide-steps">
+      <li>Agree to the disclaimer → sign in.</li>
+      <li>Click 📘 User Guide anytime (top-right) for a refresher.</li>
+      <li>Compose your email, add files, pick schedule, hit Save.</li>
+      <li>Use Calendar to sanity-check future sends; Schedules tab to pause/resume.</li>
+      <li>If something feels off, pause the schedule and dry-run to yourself.</li>
+    </ol>
+  </div>
+</div>
+
+<div id="loginOverlay" class="login-overlay">
+  <div class="login-card">
+    <div class="login-head">
+      <div class="login-badge">Secure Access</div>
+      <div class="login-title">Email Automation Pro</div>
+    </div>
+    <div class="login-sub">Please sign in to continue. New here? Create an account first.</div>
+    <div class="login-form">
+      <div>
+        <label for="gateEmail">Email</label>
+        <input id="gateEmail" type="email" placeholder="you@mail.yourparadigm.co.uk">
+      </div>
+      <div>
+        <label for="gatePassword">Password</label>
+        <input id="gatePassword" type="password" placeholder="••••••••">
+      </div>
+      <button id="gateLoginBtn" class="login-button">Continue</button>
+      <div class="login-actions">
+        <button id="gateSignupBtn" class="signup-button" type="button">Sign Up</button>
+        <div class="login-links">
+          <a href="#" id="gateReset">Forgot password?</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="mainApp" style="display: none;">
+  <div id="floatingDictation" class="floating-dictation">
+    <div id="dictationTarget" class="floating-dictation-target">READY</div>
+    <button id="floatingDictationBtn" class="floating-dictation-button" title="Click to start/stop dictation" tabindex="-1">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+    </button>
+    <div id="dictationLabel" class="floating-dictation-label">Click to Start</div>
+  </div>
+
+  <div class="container">
+    <div class="header"><h1>📧 Email Automation Pro</h1><p>Schedule and send emails with ease</p></div>
+    <div class="tabs">
+      <button class="tab" onclick="switchTab('single')">⚡ Single Send</button>
+      <button class="tab active" onclick="switchTab('compose')">✉️ Compose</button>
+      <button class="tab" onclick="switchTab('calendar')">📅 Calendar</button>
+      <button class="tab" onclick="switchTab('schedules')">📋 Schedules</button>
+      <button class="tab" onclick="switchTab('workflows')">🧭 Workflows</button>
+      <button class="tab" onclick="switchTab('folders')">📁 Folders</button>
+      <button class="tab" onclick="switchTab('access')">🔐 Access</button>
+      <button class="tab" onclick="switchTab('pqc')">🛡️ PQC Keys</button>
+    </div>
+
+    <div id="compose-tab" class="tab-content active">
+      <div class="grid">
+        <div>
+          <div class="card">
+            <div class="card-header"><div class="card-icon">✉️</div><h2 class="card-title">Compose Email</h2></div>
+            <label>Recipient Email</label>
+            <input id="recipient" type="email" placeholder="recipient@example.com" class="dictate-field" data-field-name="Recipient">
+            <label>Subject Line</label>
+            <input id="subject" type="text" placeholder="Monthly Report" class="dictate-field" data-field-name="Subject">
+            <label>Message Body</label>
+            <textarea id="body" placeholder="Type or dictate your message..." class="dictate-field" data-field-name="Message"></textarea>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-icon">📎</div><h2 class="card-title">Attachments</h2></div>
+            <button id="pick">📁 Add Files</button>
+            <div id="filesContainer" class="files-container"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-icon">⏰</div><h2 class="card-title">Actions</h2></div>
+            <div><label>Recurring Interval</label>
+              <div style="display: flex; gap: 12px;">
+                <input id="intervalValue" type="number" min="1" max="120" value="5" style="flex: 1;">
+                <select id="intervalUnit" style="flex: 1;"><option value="minutes">Minutes</option><option value="hours">Hours</option><option value="days">Days</option></select>
+              </div>
+            </div>
+            <div class="setting-row" style="margin-top:14px;">
+              <div>
+                <div class="setting-title">Secure Send (Hybrid)</div>
+                <div class="setting-desc">Wraps body in a hybrid envelope; attachments stay normal.</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div id="secureSendToggle" class="toggle" role="button" aria-pressed="false" tabindex="0"></div>
+              </div>
+            </div>
+            <button id="send" class="success">🚀 Send Now</button>
+            <button id="schedule" class="secondary">💾 Save Recurring</button>
+            <button id="scheduleOnce" class="outline">📅 Schedule Once</button>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-header"><div class="card-icon">📊</div><h2 class="card-title">Stats</h2></div>
+            <div id="stats" style="font-size: 14px; line-height: 2;"></div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-title">Error Email Alerts</div>
+                <div class="setting-desc">Email logs to notification@thewrightsupport.com on failures</div>
+              </div>
+              <div id="errorEmailToggle" class="toggle" role="button" aria-pressed="true" tabindex="0"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="single-tab" class="tab-content">
+      <div class="access-split">
+        <div class="access-hero">
+          <div class="access-seal">Royal Signal • Single Send</div>
+          <div class="gold-rule"></div>
+          <div class="access-title">Send with Precision</div>
+          <div class="access-sub">Premium single-send flow for priority messages.</div>
+          <div class="access-panel" style="margin-top: 18px;">
+            <div class="card-header" style="border-bottom: 1px solid #eceff8;">
+              <div class="card-icon">⚡</div>
+              <h2 class="card-title">Single Send</h2>
+              <div class="access-badge" style="margin-left: auto;"><span>●</span> Priority</div>
+            </div>
+            <div class="auth-form">
+              <div class="access-field">
+                <label>Recipient Email</label>
+                <input id="singleRecipient" type="email" placeholder="recipient@example.com">
+              </div>
+              <div class="access-field">
+                <label>Subject Line</label>
+                <input id="singleSubject" type="text" placeholder="Monthly Report">
+              </div>
+              <div class="access-field">
+                <label>Message Body</label>
+                <textarea id="singleBody" placeholder="Type your message..." style="min-height: 120px;"></textarea>
+              </div>
+              <div class="setting-row" style="margin: 6px 0 4px;">
+                <div>
+                  <div class="setting-title">Secure Send (Hybrid)</div>
+                  <div class="setting-desc">Wraps body in hybrid envelope.</div>
+                </div>
+                <div id="singleSecureToggle" class="toggle" role="button" aria-pressed="false" tabindex="0"></div>
+              </div>
+              <div class="access-actions">
+                <button id="singlePick" class="outline">📎 Add Files</button>
+                <button id="singleSend" class="success">🚀 Send Now</button>
+              </div>
+              <div class="access-note">Attachments are optional. All sends use your authenticated Gmail account.</div>
+            </div>
+            <div id="singleFilesContainer" class="files-container" style="margin-top: 12px;"></div>
+          </div>
+        </div>
+        <div class="access-iframe-wrap">
+          <div class="access-iframe-title">Sign Up</div>
+          <div class="access-iframe-sub">Join the Royal Signal network in seconds.</div>
+          <iframe class="auth-frame" src="https://cdn.forms-content.sg-form.com/b8a41866-f65e-11f0-8cef-eed28ae32f5b" title="Sign Up"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div id="calendar-tab" class="tab-content">
+      <div class="calendar-container">
+        <div class="calendar-header">
+          <h2 class="card-title">📅 Calendar Planner</h2>
+          <div class="calendar-nav">
+            <button id="prevMonth" class="outline">◀</button>
+            <div class="calendar-month" id="calendarMonth">January 2026</div>
+            <button id="nextMonth" class="outline">▶</button>
+          </div>
+        </div>
+        <div class="calendar-grid">
+          <div class="calendar-day-header">Sun</div><div class="calendar-day-header">Mon</div><div class="calendar-day-header">Tue</div><div class="calendar-day-header">Wed</div><div class="calendar-day-header">Thu</div><div class="calendar-day-header">Fri</div><div class="calendar-day-header">Sat</div>
+        </div>
+        <div id="calendarDays" class="calendar-grid"></div>
+      </div>
+      <div class="card" style="margin-top: 24px;">
+        <div class="card-header"><div class="card-icon">📋</div><h2 class="card-title">Tasks for Selected Date</h2></div>
+        <div id="selectedDateTasks"></div>
+      </div>
+    </div>
+
+    <div id="access-tab" class="tab-content">
+      <div class="access-split">
+        <div class="access-hero">
+          <div class="access-seal">Royal Vault • Secure Access</div>
+          <div class="gold-rule"></div>
+          <div class="access-title">Enter the Email Automation Pro</div>
+          <div class="access-sub">Protected access to your automation suite. Verified domain: mail.yourparadigm.co.uk</div>
+          <div class="access-panel" style="margin-top: 18px;">
+            <div class="card-header" style="border-bottom: 1px solid #eceff8;">
+              <div class="card-icon">🔐</div>
+              <h2 class="card-title">Login</h2>
+              <div class="access-badge" style="margin-left: auto;"><span>●</span> Secure Session</div>
+            </div>
+            <div class="auth-form">
+              <div class="access-field">
+                <label>Email</label>
+                <input id="loginEmail" type="email" placeholder="you@mail.yourparadigm.co.uk">
+              </div>
+              <div class="access-field">
+                <label>Password</label>
+                <input id="loginPassword" type="password" placeholder="••••••••">
+              </div>
+              <div class="access-actions">
+                <button id="loginBtn" class="success">Sign In</button>
+                <button id="resetLink" class="link-button">Reset password</button>
+              </div>
+              <div class="access-note">Reset emails sent via SendGrid. If configured, the email contains a reset link or code.</div>
+            </div>
+          </div>
+          <div class="access-panel" style="margin-top: 18px;">
+            <div class="card-header" style="border-bottom: 1px solid #eceff8;">
+              <div class="card-icon">✉️</div>
+              <h2 class="card-title">Reset Password</h2>
+            </div>
+            <div class="auth-form">
+              <div class="access-field">
+                <label>Email</label>
+                <input id="resetEmail" type="email" placeholder="you@mail.yourparadigm.co.uk">
+              </div>
+              <button id="sendResetBtn" class="secondary">Send Reset Email</button>
+            </div>
+          </div>
+        </div>
+        <div class="access-iframe-wrap">
+          <div class="access-iframe-title">Sign Up</div>
+          <div class="access-iframe-sub">Join the Royal Signal network in seconds.</div>
+          <iframe class="auth-frame" src="https://cdn.forms-content.sg-form.com/b8a41866-f65e-11f0-8cef-eed28ae32f5b" title="Sign Up"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div id="schedules-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header"><div class="card-icon">📋</div><h2 class="card-title">All Scheduled Tasks</h2></div>
+        <button id="refresh" class="secondary">🔄 Refresh</button>
+        <div id="schedulesContainer" class="schedule-list"></div>
+      </div>
+    </div>
+
+    <div id="pqc-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header"><div class="card-icon">🛡️</div><h2 class="card-title">Recipient PQ Keys</h2></div>
+        <p style="color:#5b6282; margin-bottom:12px;">Add each recipient's Kyber public key (base64). Secure sends will target their key; otherwise the app falls back to your local key.</p>
+        <div class="auth-form" style="grid-template-columns: 1fr 1fr; gap: 12px 16px;">
+          <div class="access-field">
+            <label>Email</label>
+            <input id="pqcEmail" type="email" placeholder="recipient@example.com">
+          </div>
+          <div class="access-field" style="grid-column: span 2;">
+            <label>Kyber Public Key (base64)</label>
+            <textarea id="pqcKey" style="min-height: 120px;" placeholder="base64 Kyber public key"></textarea>
+          </div>
+        </div>
+        <div class="access-actions" style="margin-top: 10px; justify-content: flex-end;">
+          <button id="pqcSave" class="success">💾 Save Key</button>
+        </div>
+        <div style="margin-top: 16px;">
+          <h4 style="color:#1b2a6b; margin-bottom: 8px;">Saved Keys</h4>
+          <div id="pqcList" class="files-container" style="max-height: 240px; background:#f7f7fb; border-radius:12px; padding:10px;"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon">🗝️</div><h2 class="card-title">Decrypt Envelope</h2></div>
+        <p style="color:#5b6282; margin-bottom:12px;">Select a `pqc-envelope` JSON and your Kyber key file (keys.json) to decrypt.</p>
+        <div class="auth-form" style="grid-template-columns: 1fr; gap: 12px;">
+          <div class="access-field">
+            <label>Envelope JSON</label>
+            <input id="pqcEnvPath" type="text" placeholder="/path/to/pqc-envelope.json" readonly>
+            <button id="pqcPickEnv" class="secondary" style="margin-top:6px;">📂 Pick Envelope</button>
+          </div>
+          <div class="access-field">
+            <label>Keys JSON (contains kyber secret)</label>
+            <input id="pqcKeysPath" type="text" placeholder="/path/to/keys.json" readonly>
+            <button id="pqcPickKeys" class="secondary" style="margin-top:6px;">📂 Pick Keys</button>
+          </div>
+          <button id="pqcDecrypt" class="success">🔓 Decrypt</button>
+        </div>
+        <div style="margin-top:12px; background:#0f172a; color:#e2e8f0; padding:12px; border-radius:10px; min-height:80px;" id="pqcDecryptOut">Output will appear here.</div>
+      </div>
+    </div>
+
+    <div id="workflows-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header"><div class="card-icon">🧭</div><h2 class="card-title">Workflow Guide</h2></div>
+        <p style="color:#5b6282; line-height:1.7; margin-bottom:18px;">
+          Quick map of how actions, schedules, folders, and recipients relate. Use these patterns to plan automations and avoid collisions.
+        </p>
+        <div style="display:grid; gap:16px; grid-template-columns: repeat(auto-fit,minmax(260px,1fr));">
+          <div class="access-field" style="background:#f0f4ff;">
+            <h4 style="margin-bottom:6px;">One → One</h4>
+            <p style="color:#4b5567; font-size:14px;">Single send or one-off schedule to one recipient. Best for approvals and sign-offs.</p>
+          </div>
+          <div class="access-field" style="background:#fef3c7;">
+            <h4 style="margin-bottom:6px;">One → Many</h4>
+            <p style="color:#4b5567; font-size:14px;">One schedule triggers multiple recipients. Keep batch size low to avoid throttling; attach up to 3 files.</p>
+          </div>
+          <div class="access-field" style="background:#e0f7f3;">
+            <h4 style="margin-bottom:6px;">Many → One</h4>
+            <p style="color:#4b5567; font-size:14px;">Multiple folder pairs feed a single recipient (e.g., all daily reports to ops@). Use folder days to prevent overlap.</p>
+          </div>
+          <div class="access-field" style="background:#f3e8ff;">
+            <h4 style="margin-bottom:6px;">Many → Many</h4>
+            <p style="color:#4b5567; font-size:14px;">Multiple schedules, folders, and recipients. Use naming + day filters; stagger intervals (e.g., 10m offsets) to spread load.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-icon">🪢</div><h2 class="card-title">Relationship Matrix</h2></div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:14px;">
+            <thead>
+              <tr style="background:#f7f7fb; color:#1b2a6b;">
+                <th style="text-align:left; padding:10px; border-bottom:1px solid #e4e7f3;">Source</th>
+                <th style="text-align:left; padding:10px; border-bottom:1px solid #e4e7f3;">Target</th>
+                <th style="text-align:left; padding:10px; border-bottom:1px solid #e4e7f3;">When to use</th>
+                <th style="text-align:left; padding:10px; border-bottom:1px solid #e4e7f3;">Guardrails</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">Single Send</td>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">One recipient</td>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">Ad-hoc messages, confirmations</td>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">Manual review; no recurrence</td>
+              </tr>
+              <tr>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">Recurring Schedule</td>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">One or many recipients</td>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">Status reports, daily exports</td>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">Set interval + day filters; cap attachments</td>
+              </tr>
+              <tr>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">Folder Pair</td>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">Schedule payload</td>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">Automated pickups from watched folders</td>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">Use day-of-week limits to avoid collisions</td>
+              </tr>
+              <tr>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">Calendar (future)</td>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">Once-off send</td>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">Time-sensitive mail (launches, notices)</td>
+                <td style="padding:10px; border-bottom:1px solid #eceff6;">Must be future-dated; validate timezone</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-icon">✅</div><h2 class="card-title">Checks & Best Practices</h2></div>
+        <ul style="color:#4b5567; line-height:1.8; margin-left:18px;">
+          <li>Name schedules with recipient + purpose (e.g., “Ops-daily-status”).</li>
+          <li>Offset start times by 5–10 minutes when multiple schedules share a folder.</li>
+          <li>Keep a single owner per folder pair; avoid many schedules writing to same destination.</li>
+          <li>Use checksum tab in releases to verify downloads before install.</li>
+          <li>Run a dry send to yourself after any template or folder change.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="folders-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header"><div class="card-icon">📁</div><h2 class="card-title">Multi-Folder Management</h2></div>
+        
+        <p style="color: #6b7280; margin-bottom: 24px; line-height: 1.6;">
+          Manage multiple folder pairs for different schedules. Each folder pair can be assigned to specific days of the week.
+        </p>
+
+        <!-- Add New Folder Pair -->
+        <div style="background: #f0f9ff; padding: 20px; border-radius: 12px; margin-bottom: 24px; border-left: 4px solid #0ea5e9;">
+          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; color: #111827;">➕ Add New Folder Pair</h3>
+          
+          <label>Folder Pair Name</label>
+          <input id="newFolderName" type="text" placeholder="e.g., Monday Reports, Client A Files" style="margin-bottom: 16px;">
+          
+          <label>Source Folder</label>
+          <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+            <input id="newSourcePath" type="text" placeholder="/Users/you/Documents/Source_Folder" style="flex: 1; margin-bottom: 0;">
+            <button onclick="selectFolder('newSourcePath')" class="secondary" style="margin: 0;">📂 Browse</button>
+          </div>
+          
+          <label>Destination Folder</label>
+          <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+            <input id="newDestinationPath" type="text" placeholder="/Users/you/Documents/Destination_Folder" style="flex: 1; margin-bottom: 0;">
+            <button onclick="selectFolder('newDestinationPath')" class="secondary" style="margin: 0;">📂 Browse</button>
+          </div>
+
+          <label>Active Days (optional - leave blank for all days)</label>
+          <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: white; padding: 8px 12px; border-radius: 8px; border: 2px solid #e5e7eb; text-transform: none; font-size: 14px;">
+              <input type="checkbox" value="1" class="day-checkbox"> Mon
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: white; padding: 8px 12px; border-radius: 8px; border: 2px solid #e5e7eb; text-transform: none; font-size: 14px;">
+              <input type="checkbox" value="2" class="day-checkbox"> Tue
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: white; padding: 8px 12px; border-radius: 8px; border: 2px solid #e5e7eb; text-transform: none; font-size: 14px;">
+              <input type="checkbox" value="3" class="day-checkbox"> Wed
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: white; padding: 8px 12px; border-radius: 8px; border: 2px solid #e5e7eb; text-transform: none; font-size: 14px;">
+              <input type="checkbox" value="4" class="day-checkbox"> Thu
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: white; padding: 8px 12px; border-radius: 8px; border: 2px solid #e5e7eb; text-transform: none; font-size: 14px;">
+              <input type="checkbox" value="5" class="day-checkbox"> Fri
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: white; padding: 8px 12px; border-radius: 8px; border: 2px solid #e5e7eb; text-transform: none; font-size: 14px;">
+              <input type="checkbox" value="6" class="day-checkbox"> Sat
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: white; padding: 8px 12px; border-radius: 8px; border: 2px solid #e5e7eb; text-transform: none; font-size: 14px;">
+              <input type="checkbox" value="0" class="day-checkbox"> Sun
+            </label>
+          </div>
+
+          <button id="addFolderPair" class="success">➕ Add Folder Pair</button>
+        </div>
+
+        <!-- Existing Folder Pairs -->
+        <div style="background: white; padding: 20px; border-radius: 12px; border: 2px solid #e5e7eb;">
+          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; color: #111827;">📂 Configured Folder Pairs</h3>
+          <div id="folderPairsList"></div>
+        </div>
+
+        <!-- Instructions -->
+        <div style="margin-top: 24px; padding: 20px; background: #fef3c7; border-radius: 12px; border-left: 4px solid #f59e0b;">
+          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #92400e;">ℹ️ How It Works</h3>
+          <ul style="font-size: 14px; color: #92400e; line-height: 1.8; margin-left: 20px;">
+            <li><strong>Multiple Folders:</strong> Add as many folder pairs as you need</li>
+            <li><strong>Day Scheduling:</strong> Assign folders to specific days (e.g., Monday uses Folder 1, Tuesday uses Folder 2)</li>
+            <li><strong>Auto-Processing:</strong> Files in active folders are automatically sent via your recurring schedules</li>
+            <li><strong>Batching:</strong> Maximum 3 files per email</li>
+            <li><strong>Archive:</strong> Sent files are moved to destination folder</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// GLOBAL STATE - window.APP for maximum accessibility
+window.APP = window.APP || {};
+window.APP.ipc = null;
+window.APP.files = [];
+window.APP.schedules = [];
+window.APP.currentDate = new Date();
+window.APP.selectedDate = null;
+window.APP.recognition = null;
+window.APP.isListening = false;
+window.APP.currentField = null;
+window.APP.isMouseDown = false;
+window.APP.isTouchActive = false;
+let APP_STARTED = false;
+
+function enterApp() {
+  if (APP_STARTED) return;
+  const overlay = document.getElementById('disclaimerOverlay');
+  const loginOverlay = document.getElementById('loginOverlay');
+  const mainApp = document.getElementById('mainApp');
+  overlay.classList.add('hidden');
+  loginOverlay.classList.remove('active');
+  mainApp.style.display = 'block';
+  APP_STARTED = true;
+  setTimeout(initApp, 100);
+}
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function appendLines(container, lines) {
+  lines.forEach((line, i) => {
+    container.appendChild(document.createTextNode(line));
+    if (i < lines.length - 1) container.appendChild(document.createElement('br'));
+  });
+}
+
+function initGate() {
+  const loginOverlay = document.getElementById('loginOverlay');
+  const gateLoginBtn = document.getElementById('gateLoginBtn');
+  const gateSignupBtn = document.getElementById('gateSignupBtn');
+  const gateReset = document.getElementById('gateReset');
+  if (!gateLoginBtn) return;
+
+  gateLoginBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const email = (document.getElementById('gateEmail') || {}).value || '';
+    const pwd = (document.getElementById('gatePassword') || {}).value || '';
+    if (!email || !email.includes('@')) { alert('Enter a valid email'); return; }
+    if (!pwd || pwd.length < 4) { alert('Enter your password'); return; }
+    sessionStorage.setItem('gateLoggedIn', 'true');
+    loginOverlay.classList.remove('active');
+    enterApp();
+  });
+
+  gateSignupBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.open('https://cdn.forms-content.sg-form.com/b8a41866-f65e-11f0-8cef-eed28ae32f5b', '_blank', 'noopener');
+  });
+
+  gateReset?.addEventListener('click', (e) => {
+    e.preventDefault();
+    alert('Password reset emails are sent via the Reset Password panel after login.');
+  });
+}
+
+// User Guide overlay
+function initGuide() {
+  const guideBtn = document.getElementById('guideBtn');
+  const guideOverlay = document.getElementById('guideOverlay');
+  const guideClose = document.getElementById('guideClose');
+  if (!guideBtn || !guideOverlay) return;
+  const show = () => guideOverlay.classList.add('active');
+  const hide = () => guideOverlay.classList.remove('active');
+  guideBtn.addEventListener('click', show);
+  guideClose?.addEventListener('click', hide);
+  guideOverlay.addEventListener('click', (e) => {
+    if (e.target === guideOverlay) hide();
+  });
+}
+
+// Disclaimer handler
+(function() {
+  const overlay = document.getElementById('disclaimerOverlay');
+  const mainApp = document.getElementById('mainApp');
+  const loginOverlay = document.getElementById('loginOverlay');
+  const agreeCheck = document.getElementById('agreeCheckbox');
+  const disagreeCheck = document.getElementById('disagreeCheckbox');
+  const agreeBtn = document.getElementById('agreeBtn');
+  const disagreeBtn = document.getElementById('disagreeBtn');
+
+  const maybeEnter = () => {
+    const agreed = sessionStorage.getItem('disclaimerAgreed') === 'true';
+    const authed = sessionStorage.getItem('gateLoggedIn') === 'true';
+    if (agreed && authed) {
+      enterApp();
+    } else if (agreed) {
+      overlay.classList.add('hidden');
+      loginOverlay.classList.add('active');
+    }
+  };
+
+  if (sessionStorage.getItem('disclaimerAgreed') === 'true') {
+    maybeEnter();
+    return;
+  }
+
+  agreeCheck.onchange = function() {
+    if (this.checked) { disagreeCheck.checked = false; agreeBtn.disabled = false; disagreeBtn.disabled = true; }
+    else { agreeBtn.disabled = true; }
+  };
+  disagreeCheck.onchange = function() {
+    if (this.checked) { agreeCheck.checked = false; disagreeBtn.disabled = false; agreeBtn.disabled = true; }
+    else { disagreeBtn.disabled = true; }
+  };
+  agreeBtn.onclick = function() {
+    sessionStorage.setItem('disclaimerAgreed', 'true');
+    maybeEnter();
+  };
+  disagreeBtn.onclick = function() {
+    if (confirm('Are you sure you want to exit?')) window.close();
+  };
+})();
+
+function initApp() {
+  loadSchedules();
+  renderFiles();
+  renderCalendar();
+  initDictation();
+  initFolders();
+  initSettings();
+  initAccess();
+   initSecureToggles();
+  initSingleSend();
+  initPqcKeys();
+  initPqcDecrypt();
+}
+
+// DICTATION SYSTEM - Using Python + Whisper
+function initDictation() {
+  try {
+    const floatDiv = document.getElementById('floatingDictation');
+  const floatBtn = document.getElementById('floatingDictationBtn');
+  const floatLabel = document.getElementById('dictationLabel');
+  const floatTarget = document.getElementById('dictationTarget');
+
+  if (!floatDiv || !floatBtn) {
+    console.error('❌ Required DOM elements not found!');
+    return;
+  }
+
+  const fields = document.querySelectorAll('.dictate-field');
+
+  fields.forEach(f => {
+    f.addEventListener('focus', function() {
+      window.APP.currentField = this;
+      floatTarget.textContent = this.getAttribute('data-field-name').toUpperCase();
+      floatDiv.classList.add('active');
+    });
+
+    f.addEventListener('blur', function() {
+      if (window.APP.isListening) return;
+      setTimeout(() => {
+        if (!window.APP.isListening && window.APP.currentField === this) {
+          floatDiv.classList.remove('active');
+          window.APP.currentField = null;
+        }
+      }, 300);
+    });
+  });
+
+  // CLICK TO TOGGLE (not hold!)
+  floatBtn.onclick = async (e) => {
+    e.preventDefault();
+    if (window.APP.isListening) {
+      stopDict();
+    } else {
+      await startDict();
+    }
+  };
+
+  async function startDict() {
+    if (window.APP.isListening) {
+      console.log('Already listening');
+      return;
+    }
+    if (!window.APP.currentField) {
+      alert('⚠️ Please click on a field (Recipient, Subject, or Message) first!');
+      return;
+    }
+    
+    window.APP.currentField.focus();
+    window.APP.isListening = true;
+    floatBtn.classList.add('listening');
+    floatLabel.classList.add('listening');
+    floatLabel.textContent = '🎤 Listening for 5 seconds...';
+    
+    try {
+      // Call Python + Whisper transcription
+      const result = await window.electronAPI.transcribeAudio({ 
+        duration: 5,  // Record for 5 seconds
+        model: 'base' // Options: tiny, base, small, medium, large
+      });
+      
+      if (result.success && result.text) {
+        // Insert transcription into current field
+        const field = window.APP.currentField;
+        const pos = field.selectionStart || 0;
+        const before = field.value.substring(0, pos);
+        const after = field.value.substring(pos);
+        const newText = result.text;
+        
+        field.value = before + newText + ' ' + after;
+        field.setSelectionRange(pos + newText.length + 1, pos + newText.length + 1);
+        field.focus();
+        floatLabel.textContent = '✅ Done!';
+        
+        // Reset label after 2 seconds
+        setTimeout(() => {
+          floatLabel.textContent = 'Click to Start';
+        }, 2000);
+        
+      } else {
+        console.error('❌ Transcription failed:', result.error);
+        alert('❌ Transcription failed: ' + (result.error || 'Unknown error'));
+        floatLabel.textContent = '❌ Failed';
+        setTimeout(() => {
+          floatLabel.textContent = 'Click to Start';
+        }, 2000);
+      }
+      
+    } catch(e) {
+      alert('❌ Error: ' + e.message);
+      floatLabel.textContent = '❌ Error';
+      setTimeout(() => {
+        floatLabel.textContent = 'Click to Start';
+      }, 2000);
+    } finally {
+      window.APP.isListening = false;
+      floatBtn.classList.remove('listening');
+      floatLabel.classList.remove('listening');
+    }
+  }
+
+  function stopDict() {
+    if (!window.APP.isListening) return;
+    window.APP.isListening = false;
+    floatBtn.classList.remove('listening');
+    floatLabel.classList.remove('listening');
+    floatLabel.textContent = 'Click to Start';
+  }
+
+  } catch (error) {
+    console.error('Dictation init error:', error);
+  }
+}
+
+// EMAIL & CALENDAR FUNCTIONS
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+  event.target.closest('.tab').classList.add('active');
+  document.getElementById(t + '-tab').classList.add('active');
+  if (t === 'calendar') renderCalendar();
+  else if (t === 'schedules') loadSchedules();
+}
+
+pick.onclick = async () => {
+  const f = await window.electronAPI.pickFiles();
+  window.APP.files.push(...f);
+  renderFiles();
+  updateStats();
+};
+
+function renderFiles() {
+  filesContainer.textContent = '';
+  if (window.APP.files.length === 0) {
+    const empty = el('div', 'empty-state');
+    empty.appendChild(el('div', 'empty-state-icon', '📁'));
+    empty.appendChild(el('div', '', 'No files'));
+    filesContainer.appendChild(empty);
+    return;
+  }
+  window.APP.files.forEach((f, i) => {
+    const item = el('div', 'file-item');
+    const info = el('div', 'file-info');
+    info.appendChild(el('span', '', '📄'));
+    info.appendChild(el('span', 'file-name', f.split('/').pop()));
+    const btn = el('button', 'file-remove', '✕');
+    btn.addEventListener('click', () => removeFile(i));
+    item.appendChild(info);
+    item.appendChild(btn);
+    filesContainer.appendChild(item);
+  });
+}
+
+function removeFile(i) { window.APP.files.splice(i, 1); renderFiles(); updateStats(); }
+
+send.onclick = async () => {
+  if (!recipient.value || !subject.value || !body.value) { alert('Please fill in all fields'); return; }
+  if (!isValidEmail(recipient.value)) { alert('Please enter a valid recipient email'); return; }
+  try {
+    await window.electronAPI.sendNow({
+      recipient: recipient.value,
+      subject: subject.value,
+      body: body.value,
+      files: window.APP.files,
+      secureHybrid: isSecureHybridEnabled()
+    });
+    alert('✅ Email sent!');
+  } catch (e) { alert('❌ Error: ' + e.message); }
+};
+
+schedule.onclick = async () => {
+  if (!recipient.value || !subject.value || !body.value) { alert('Please fill in all fields'); return; }
+  if (!isValidEmail(recipient.value)) { alert('Please enter a valid recipient email'); return; }
+  const v = Number(intervalValue.value);
+  const u = intervalUnit.value;
+  if (!Number.isFinite(v) || v <= 0) { alert('Please enter a valid interval value'); return; }
+  let ms = u === 'minutes' ? v * 60000 : u === 'hours' ? v * 3600000 : v * 86400000;
+  try {
+    window.APP.schedules = await window.electronAPI.saveSchedule({
+      type: 'recurring',
+      intervalMs: ms,
+      intervalText: `${v} ${u}`,
+      payload: { recipient: recipient.value, subject: subject.value, body: body.value, files: window.APP.files, secureHybrid: isSecureHybridEnabled() }
+    });
+    alert('✅ Recurring schedule saved!');
+    updateStats();
+  } catch (e) { alert('❌ Error: ' + e.message); }
+};
+
+scheduleOnce.onclick = async () => {
+  if (!recipient.value || !subject.value || !body.value) { alert('Please fill in all fields'); return; }
+  if (!isValidEmail(recipient.value)) { alert('Please enter a valid recipient email'); return; }
+  const d = prompt('Enter date (YYYY-MM-DD):');
+  if (!d) return;
+  const t = prompt('Enter time (HH:MM):', '09:00');
+  if (!t) return;
+  const dt = new Date(d + ' ' + t);
+  if (Number.isNaN(dt.getTime())) { alert('Please enter a valid date/time'); return; }
+  if (dt <= new Date()) { alert('Please select a future date/time'); return; }
+  try {
+    window.APP.schedules = await window.electronAPI.saveSchedule({
+      type: 'future',
+      scheduledTime: dt.toISOString(),
+      intervalMs: 0,
+      intervalText: 'Once at ' + dt.toLocaleString(),
+      payload: { recipient: recipient.value, subject: subject.value, body: body.value, files: window.APP.files, secureHybrid: isSecureHybridEnabled() }
+    });
+    alert('✅ Scheduled for ' + dt.toLocaleString());
+    updateStats();
+  } catch (e) { alert('❌ Error: ' + e.message); }
+};
+
+function renderCalendar() {
+  const y = window.APP.currentDate.getFullYear();
+  const m = window.APP.currentDate.getMonth();
+  const mn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  calendarMonth.textContent = mn[m] + ' ' + y;
+  const fd = new Date(y, m, 1);
+  const ld = new Date(y, m + 1, 0);
+  const sd = fd.getDay();
+  const dim = ld.getDate();
+  let h = '';
+  const pmd = new Date(y, m, 0).getDate();
+  for (let i = sd - 1; i >= 0; i--) h += `<div class="calendar-day other-month">${pmd - i}</div>`;
+  const td = new Date();
+  for (let d = 1; d <= dim; d++) {
+    const dt = new Date(y, m, d);
+    const isT = dt.toDateString() === td.toDateString();
+    const hasE = window.APP.schedules.some(s => s.type === 'future' && s.scheduledTime && new Date(s.scheduledTime).toDateString() === dt.toDateString());
+    let c = 'calendar-day';
+    if (isT) c += ' today';
+    if (hasE) c += ' has-event';
+    h += `<div class="${c}" onclick="selectCalendarDate('${dt.toISOString()}')">${d}</div>`;
+  }
+  const rd = 42 - (sd + dim);
+  for (let i = 1; i <= rd; i++) h += `<div class="calendar-day other-month">${i}</div>`;
+  calendarDays.innerHTML = h;
+}
+
+function selectCalendarDate(ds) {
+  window.APP.selectedDate = new Date(ds);
+  showTasksForDate(window.APP.selectedDate);
+}
+
+function showTasksForDate(dt) {
+  const ds = dt.toDateString();
+  const ts = window.APP.schedules.filter(s => s.type === 'future' && s.scheduledTime && new Date(s.scheduledTime).toDateString() === ds);
+  selectedDateTasks.textContent = '';
+  if (ts.length === 0) {
+    const empty = el('div', 'empty-state');
+    empty.appendChild(el('div', 'empty-state-icon', '📅'));
+    empty.appendChild(el('div', '', `No tasks for ${dt.toLocaleDateString()}`));
+    selectedDateTasks.appendChild(empty);
+    return;
+  }
+  ts.forEach(t => {
+    const item = el('div', 'schedule-item');
+    const header = el('div', 'schedule-header');
+    header.appendChild(el('div', 'schedule-title', t.payload.subject));
+    header.appendChild(el('div', 'schedule-badge future', new Date(t.scheduledTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})));
+    const details = el('div', 'schedule-details');
+    appendLines(details, [
+      `📧 ${t.payload.recipient}`,
+      `📎 ${t.payload.files.length} file(s)`,
+      `📅 ${new Date(t.scheduledTime).toLocaleString()}`
+    ]);
+    const del = el('button', 'danger', '🗑️ Delete');
+    del.addEventListener('click', () => deleteSchedule(t.id));
+    item.appendChild(header);
+    item.appendChild(details);
+    item.appendChild(del);
+    selectedDateTasks.appendChild(item);
+  });
+}
+
+prevMonth.onclick = () => { window.APP.currentDate.setMonth(window.APP.currentDate.getMonth() - 1); renderCalendar(); };
+nextMonth.onclick = () => { window.APP.currentDate.setMonth(window.APP.currentDate.getMonth() + 1); renderCalendar(); };
+
+refresh.onclick = () => { loadSchedules(); };
+
+async function loadSchedules() {
+  window.APP.schedules = await window.electronAPI.getSchedules();
+  renderSchedules();
+  updateStats();
+}
+
+function renderSchedules() {
+  schedulesContainer.textContent = '';
+  if (window.APP.schedules.length === 0) {
+    const empty = el('div', 'empty-state');
+    empty.appendChild(el('div', 'empty-state-icon', '📅'));
+    empty.appendChild(el('div', '', 'No schedules'));
+    schedulesContainer.appendChild(empty);
+    return;
+  }
+  window.APP.schedules.forEach(t => {
+    const item = el('div', 'schedule-item');
+    const header = el('div', 'schedule-header');
+    header.appendChild(el('div', 'schedule-title', t.payload.subject));
+    header.appendChild(el('div', `schedule-badge ${t.type === 'future' ? 'future' : ''}`, t.type === 'future' ? '🕐 Future' : '✓ Active'));
+    const details = el('div', 'schedule-details');
+    const ti = t.type === 'future' ? `📅 ${new Date(t.scheduledTime).toLocaleString()}` : `⏱️ Every ${t.intervalText}`;
+    appendLines(details, [
+      `📧 ${t.payload.recipient}`,
+      ti,
+      `📎 ${t.payload.files.length} file(s)`
+    ]);
+    item.appendChild(header);
+    item.appendChild(details);
+    if (t.type !== 'future') {
+      const toggle = el('button', 'secondary', t.enabled ? '⏸ Pause' : '▶️ Resume');
+      toggle.addEventListener('click', () => toggleSchedule(t.id));
+      item.appendChild(toggle);
+    }
+    const del = el('button', 'danger', '🗑️ Delete');
+    del.addEventListener('click', () => deleteSchedule(t.id));
+    item.appendChild(del);
+    schedulesContainer.appendChild(item);
+  });
+}
+
+async function toggleSchedule(id) {
+  const t = window.APP.schedules.find(x => x.id === id);
+  if (t) {
+    t.enabled = !t.enabled;
+    await window.electronAPI.updateSchedule(t);
+    loadSchedules();
+  }
+}
+
+async function deleteSchedule(id) {
+  if (confirm('Delete this schedule?')) {
+    window.APP.schedules = window.APP.schedules.filter(x => x.id !== id);
+    await window.electronAPI.saveSchedules(window.APP.schedules);
+    loadSchedules();
+    renderCalendar();
+  }
+}
+
+function updateStats() {
+  const rc = window.APP.schedules.filter(s => s.type === 'recurring' && s.enabled).length;
+  const fc = window.APP.schedules.filter(s => s.type === 'future').length;
+  stats.innerHTML = `📊 Total: ${window.APP.schedules.length}<br>🔄 Recurring: ${rc}<br>📅 Future: ${fc}<br>📎 Files: ${window.APP.files.length}`;
+}
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+async function initSettings() {
+  const toggle = document.getElementById('errorEmailToggle');
+  if (!toggle) return;
+  try {
+    const settings = await window.electronAPI.getSettings();
+    setToggle(toggle, settings?.emailErrorLogs !== false);
+    toggle.addEventListener('click', () => handleToggleClick(toggle));
+    toggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleToggleClick(toggle);
+      }
+    });
+  } catch (e) {
+    console.error('Failed to load settings', e);
+  }
+}
+
+async function handleToggleClick(toggle) {
+  const next = !toggle.classList.contains('active');
+  setToggle(toggle, next);
+  try {
+    await window.electronAPI.updateSettings({ emailErrorLogs: next });
+  } catch (e) {
+    console.error('Failed to update settings', e);
+    setToggle(toggle, !next);
+    alert('❌ Failed to update settings');
+  }
+}
+
+function setToggle(toggle, isOn) {
+  toggle.classList.toggle('active', isOn);
+  toggle.setAttribute('aria-pressed', isOn ? 'true' : 'false');
+}
+
+function initSecureToggles() {
+  const mainToggle = document.getElementById('secureSendToggle');
+  const singleToggle = document.getElementById('singleSecureToggle');
+  [mainToggle, singleToggle].forEach(t => {
+    if (!t) return;
+    setToggle(t, false);
+    t.addEventListener('click', () => setToggle(t, !t.classList.contains('active')));
+    t.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setToggle(t, !t.classList.contains('active'));
+      }
+    });
+  });
+}
+
+function isSecureHybridEnabled(isSingle = false) {
+  const t = document.getElementById(isSingle ? 'singleSecureToggle' : 'secureSendToggle');
+  return !!t && t.classList.contains('active');
+}
+
+function initAccess() {
+  const loginBtn = document.getElementById('loginBtn');
+  const resetLink = document.getElementById('resetLink');
+  const sendResetBtn = document.getElementById('sendResetBtn');
+
+  if (loginBtn) {
+    loginBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('Login is handled by your account system. Use reset if needed.');
+    });
+  }
+
+  if (resetLink) {
+    resetLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      const resetEmail = document.getElementById('resetEmail');
+      if (resetEmail) resetEmail.focus();
+    });
+  }
+
+  if (sendResetBtn) {
+    sendResetBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('resetEmail')?.value?.trim();
+      if (!email || !isValidEmail(email)) {
+        alert('Please enter a valid email address');
+        return;
+      }
+      try {
+        await window.electronAPI.sendResetEmail(email);
+        alert('✅ Reset email sent');
+      } catch (err) {
+        alert('❌ Failed to send reset email: ' + (err?.message || err));
+      }
+    });
+  }
+}
+
+function initSingleSend() {
+  const pickBtn = document.getElementById('singlePick');
+  const sendBtn = document.getElementById('singleSend');
+  const filesContainer = document.getElementById('singleFilesContainer');
+  const files = [];
+
+  function renderSingleFiles() {
+    if (!filesContainer) return;
+    filesContainer.textContent = '';
+    if (files.length === 0) {
+      const empty = el('div', 'empty-state');
+      empty.appendChild(el('div', 'empty-state-icon', '📁'));
+      empty.appendChild(el('div', '', 'No files'));
+      filesContainer.appendChild(empty);
+      return;
+    }
+    files.forEach((f, i) => {
+      const item = el('div', 'file-item');
+      const info = el('div', 'file-info');
+      info.appendChild(el('span', '', '📄'));
+      info.appendChild(el('span', 'file-name', f.split('/').pop()));
+      const btn = el('button', 'file-remove', '✕');
+      btn.addEventListener('click', () => {
+        files.splice(i, 1);
+        renderSingleFiles();
+      });
+      item.appendChild(info);
+      item.appendChild(btn);
+      filesContainer.appendChild(item);
+    });
+  }
+
+  if (pickBtn) {
+    pickBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const picked = await window.electronAPI.pickFiles();
+      files.push(...picked);
+      renderSingleFiles();
+    });
+  }
+
+  if (sendBtn) {
+    sendBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const recipient = document.getElementById('singleRecipient')?.value?.trim();
+      const subject = document.getElementById('singleSubject')?.value?.trim();
+      const body = document.getElementById('singleBody')?.value?.trim();
+      if (!recipient || !subject || !body) { alert('Please fill in all fields'); return; }
+      if (!isValidEmail(recipient)) { alert('Please enter a valid recipient email'); return; }
+      try {
+        await window.electronAPI.sendNow({ recipient, subject, body, files, secureHybrid: isSecureHybridEnabled(true) });
+        alert('✅ Email sent!');
+      } catch (err) {
+        alert('❌ Error: ' + (err?.message || err));
+      }
+    });
+  }
+
+  renderSingleFiles();
+}
+
+async function initPqcKeys() {
+  const saveBtn = document.getElementById('pqcSave');
+  const list = document.getElementById('pqcList');
+  const emailInput = document.getElementById('pqcEmail');
+  const keyInput = document.getElementById('pqcKey');
+  if (!saveBtn || !list) return;
+
+  async function render() {
+    list.textContent = '';
+    const keys = await window.electronAPI.getRecipientKeys();
+    if (!keys || keys.length === 0) {
+      const empty = el('div', 'empty-state');
+      empty.appendChild(el('div', 'empty-state-icon', '🔑'));
+      empty.appendChild(el('div', '', 'No recipient keys'));
+      list.appendChild(empty);
+      return;
+    }
+    keys.forEach((k) => {
+      const item = el('div', 'file-item');
+      const info = el('div', 'file-info');
+      info.appendChild(el('span', '', '🔐'));
+      info.appendChild(el('span', 'file-name', `${k.email}`));
+      const copyBtn = el('button', 'secondary', 'Copy pubkey');
+      copyBtn.style.margin = '0';
+      copyBtn.addEventListener('click', () => navigator.clipboard.writeText(k.kem_public || ''));
+      item.appendChild(info);
+      item.appendChild(copyBtn);
+      list.appendChild(item);
+    });
+  }
+
+  saveBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = emailInput?.value?.trim();
+    const key = keyInput?.value?.trim();
+    if (!email || !isValidEmail(email)) { alert('Enter a valid email'); return; }
+    if (!key) { alert('Paste the Kyber public key (base64)'); return; }
+    try {
+      await window.electronAPI.saveRecipientKey({ email, kem_public: key });
+      await render();
+      alert('✅ Key saved');
+    } catch (err) {
+      alert('❌ Failed to save key: ' + (err?.message || err));
+    }
+  });
+
+  render();
+}
+
+function initPqcDecrypt() {
+  const pickEnv = document.getElementById('pqcPickEnv');
+  const pickKeys = document.getElementById('pqcPickKeys');
+  const envInput = document.getElementById('pqcEnvPath');
+  const keysInput = document.getElementById('pqcKeysPath');
+  const decryptBtn = document.getElementById('pqcDecrypt');
+  const out = document.getElementById('pqcDecryptOut');
+  if (!pickEnv || !pickKeys || !decryptBtn) return;
+
+  pickEnv.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const paths = await window.electronAPI.pickFiles();
+    if (paths && paths[0]) envInput.value = paths[0];
+  });
+  pickKeys.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const paths = await window.electronAPI.pickFiles();
+    if (paths && paths[0]) keysInput.value = paths[0];
+  });
+  decryptBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const envPath = envInput.value.trim();
+    const keysPath = keysInput.value.trim();
+    if (!envPath || !keysPath) { alert('Select envelope and keys'); return; }
+    out.textContent = 'Decrypting...';
+    try {
+      const res = await window.electronAPI.decryptEnvelope({ envelopePath: envPath, keysPath });
+      out.textContent = `Verified: ${res.verified ? 'yes' : 'no'}\nSigner: ${res.signer_public}\n---\n${res.plaintext}`;
+    } catch (err) {
+      out.textContent = '❌ ' + (err?.message || err);
+    }
+  });
+}
+
+// FOLDER MANAGEMENT
+window.APP.folderPairs = [];
+
+function initFolders() {
+  if (!document.getElementById('addFolderPair')) return;
+  addFolderPair.onclick = addNewFolderPair;
+  loadFolderPairs();
+}
+
+async function loadFolderPairs() {
+  try {
+    const pairs = await window.electronAPI.getFolderPairs();
+    window.APP.folderPairs = pairs || [];
+    renderFolderPairs();
+  } catch (e) {
+    console.error('Error loading folder pairs:', e);
+    window.APP.folderPairs = [];
+    renderFolderPairs();
+  }
+}
+
+function renderFolderPairs() {
+  const container = document.getElementById('folderPairsList');
+  if (!container) return;
+  container.textContent = '';
+  if (window.APP.folderPairs.length === 0) {
+    const empty = el('div', 'empty-state');
+    empty.appendChild(el('div', 'empty-state-icon', '📁'));
+    empty.appendChild(el('div', '', 'No folder pairs configured'));
+    container.appendChild(empty);
+    return;
+  }
+  
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  window.APP.folderPairs.forEach((pair, index) => {
+    const daysText = pair.activeDays && pair.activeDays.length > 0
+      ? pair.activeDays.map(d => dayNames[d]).join(', ')
+      : 'All days';
+
+    const item = el('div', 'schedule-item');
+    item.style.marginBottom = '16px';
+    const header = el('div', 'schedule-header');
+    header.appendChild(el('div', 'schedule-title', pair.name));
+    header.appendChild(el('div', 'schedule-badge', daysText));
+    const details = el('div', 'schedule-details');
+    appendLines(details, [
+      `📥 Source: ${pair.sourcePath}`,
+      `📤 Destination: ${pair.destinationPath}`
+    ]);
+    const actions = el('div', '');
+    actions.style.display = 'flex';
+    actions.style.gap = '8px';
+    actions.style.marginTop = '12px';
+    const openSource = el('button', 'outline', '🔍 Open Source');
+    openSource.addEventListener('click', () => openFolderPath(pair.sourcePath));
+    const openDest = el('button', 'outline', '🔍 Open Destination');
+    openDest.addEventListener('click', () => openFolderPath(pair.destinationPath));
+    const del = el('button', 'danger', '🗑️ Delete');
+    del.addEventListener('click', () => deleteFolderPair(index));
+    actions.appendChild(openSource);
+    actions.appendChild(openDest);
+    actions.appendChild(del);
+
+    item.appendChild(header);
+    item.appendChild(details);
+    item.appendChild(actions);
+    container.appendChild(item);
+  });
+}
+
+async function addNewFolderPair() {
+  const name = document.getElementById('newFolderName').value.trim();
+  const sourcePath = document.getElementById('newSourcePath').value.trim();
+  const destinationPath = document.getElementById('newDestinationPath').value.trim();
+  
+  if (!name || !sourcePath || !destinationPath) {
+    alert('❌ Please fill in all fields');
+    return;
+  }
+  
+  // Get selected days
+  const dayCheckboxes = document.querySelectorAll('.day-checkbox:checked');
+  const activeDays = Array.from(dayCheckboxes).map(cb => parseInt(cb.value));
+  
+  const newPair = {
+    id: Date.now().toString(),
+    name,
+    sourcePath,
+    destinationPath,
+    activeDays: activeDays.length > 0 ? activeDays : null
+  };
+  
+  window.APP.folderPairs.push(newPair);
+  
+  try {
+    await window.electronAPI.saveFolderPairs(window.APP.folderPairs);
+    alert('✅ Folder pair added!');
+    
+    // Clear form
+    document.getElementById('newFolderName').value = '';
+    document.getElementById('newSourcePath').value = '';
+    document.getElementById('newDestinationPath').value = '';
+    document.querySelectorAll('.day-checkbox').forEach(cb => cb.checked = false);
+    
+    renderFolderPairs();
+  } catch (e) {
+    alert('❌ Error saving folder pair: ' + e.message);
+  }
+}
+
+async function deleteFolderPair(index) {
+  if (!confirm('Delete this folder pair?')) return;
+  
+  window.APP.folderPairs.splice(index, 1);
+  
+  try {
+    await window.electronAPI.saveFolderPairs(window.APP.folderPairs);
+    alert('✅ Folder pair deleted');
+    renderFolderPairs();
+  } catch (e) {
+    alert('❌ Error deleting folder pair: ' + e.message);
+  }
+}
+
+async function selectFolder(inputId) {
+  try {
+    const result = await window.electronAPI.selectFolder();
+    if (result && result.length > 0) {
+      document.getElementById(inputId).value = result[0];
+    }
+  } catch (e) {
+    console.error('Error selecting folder:', e);
+  }
+}
+
+async function openFolderPath(path) {
+  try {
+    await window.electronAPI.openFolder(path);
+  } catch (e) {
+    alert('❌ Error opening folder: ' + e.message);
+  }
+}
+
+// Initialize login gate once script loads
+initGate();
+initGuide();
+</script>
+</body>
+</html>
