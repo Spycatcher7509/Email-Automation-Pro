@@ -6,6 +6,7 @@ try { require('dotenv').config(); } catch (_) {}
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const { google } = require('googleapis');
 const { spawn, spawnSync } = require('child_process');
+const https = require('https');
 const fs = require('fs');
 const fsp = fs.promises;
 const path = require('path');
@@ -33,6 +34,7 @@ const RESET_URL_BASE = process.env.RESET_URL_BASE || '';
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || '';
 const PQC_PROXY_PORT = Number(process.env.PQC_PROXY_PORT || 8787);
 const PQC_PROXY_PATH = path.join(__dirname, 'pqc-proxy', 'target', 'release', 'pqc-proxy');
+const YTDLP_LOCAL = path.join(DATA_DIR, 'yt-dlp');
 
 /* ───────────────── STATE ───────────────── */
 
@@ -85,11 +87,30 @@ async function saveMediaLog(entries) {
   await fsp.writeFile(MEDIA_LOG_PATH, JSON.stringify(entries, null, 2));
 }
 
-function ensureYtDlp() {
+function fileExists(p) {
+  try { fs.accessSync(p, fs.constants.X_OK); return true; } catch { return false; }
+}
+
+function downloadYtDlpIfNeeded() {
+  return new Promise((resolve, reject) => {
+    if (fileExists(YTDLP_LOCAL)) return resolve(YTDLP_LOCAL);
+    const url = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp';
+    const file = fs.createWriteStream(YTDLP_LOCAL, { mode: 0o755 });
+    https.get(url, (res) => {
+      if (res.statusCode !== 200) return reject(new Error(`yt-dlp download failed: ${res.statusCode}`));
+      res.pipe(file);
+      file.on('finish', () => file.close(() => resolve(YTDLP_LOCAL)));
+    }).on('error', (err) => reject(err));
+  });
+}
+
+async function ensureYtDlp() {
   const r = spawnSync('yt-dlp', ['--version'], { encoding: 'utf8' });
-  if (r.error || r.status !== 0) {
-    throw new Error('yt-dlp not found. Install it (e.g., brew install yt-dlp) and ensure it is on PATH.');
-  }
+  if (!r.error && r.status === 0) return 'yt-dlp';
+  // try local cached binary
+  if (fileExists(YTDLP_LOCAL)) return YTDLP_LOCAL;
+  await downloadYtDlpIfNeeded();
+  return YTDLP_LOCAL;
 }
 
 /* ───────────────── ELECTRON ───────────────── */
@@ -704,12 +725,12 @@ ipcMain.handle('transcribe-file', async (_, { filePath, model }) => {
 
 ipcMain.handle('transcribe-youtube', async (_, { url, model }) => {
   if (!url) throw new Error('url required');
-  ensureYtDlp();
+  const ytBinary = await ensureYtDlp();
   const tmpDir = await fsp.mkdtemp(path.join(require('os').tmpdir(), 'yt-audio-'));
   const outFile = path.join(tmpDir, 'audio.mp3');
   // Require yt-dlp on PATH
   await new Promise((resolve, reject) => {
-    const dl = spawn('yt-dlp', ['-f', 'bestaudio', '--extract-audio', '--audio-format', 'mp3', '-o', outFile, url], { stdio: 'pipe' });
+    const dl = spawn(ytBinary, ['-f', 'bestaudio', '--extract-audio', '--audio-format', 'mp3', '-o', outFile, url], { stdio: 'pipe' });
     let stderr = '';
     dl.stderr.on('data', (d) => { stderr += d.toString(); });
     dl.on('error', reject);
