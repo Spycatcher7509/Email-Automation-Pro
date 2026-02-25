@@ -40,5 +40,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Checksums
   computeChecksum: (filePath) => ipcRenderer.invoke('compute-checksum', filePath),
-  getChecksumLog: () => ipcRenderer.invoke('get-checksum-log')
+  getChecksumLog: () => ipcRenderer.invoke('get-checksum-log'),
+
+  // Media transcription
+  transcribeYoutube: (payload) => ipcRenderer.invoke('transcribe-youtube', payload),
+  transcribeFile: (payload) => ipcRenderer.invoke('transcribe-file', payload)
 });

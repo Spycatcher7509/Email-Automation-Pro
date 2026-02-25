@@ -343,6 +343,7 @@ button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2
       <button class="tab" onclick="switchTab('schedules')">📋 Schedules</button>
       <button class="tab" onclick="switchTab('workflows')">🧭 Workflows</button>
       <button class="tab" onclick="switchTab('speakers')">🎙️ Speakers</button>
+      <button class="tab" onclick="switchTab('media')">🎧 Media</button>
       <button class="tab" onclick="switchTab('database')">🗂️ Database</button>
       <button class="tab" onclick="switchTab('folders')">📁 Folders</button>
       <button class="tab" onclick="switchTab('access')">🔐 Access</button>
@@ -578,6 +579,33 @@ button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2
             <li>Rename speakers post-run to keep transcripts clean.</li>
           </ul>
         </div>
+      </div>
+    </div>
+
+    <div id="media-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header"><div class="card-icon">🎧</div><h2 class="card-title">Transcribe Media</h2></div>
+        <p style="color:#4b5567; line-height:1.6;">Transcribe a YouTube URL or a local audio file. Uses Whisper large by default.</p>
+        <div class="auth-form" style="grid-template-columns: 1fr; gap: 12px;">
+          <div class="access-field">
+            <label>YouTube URL</label>
+            <input id="ytUrl" type="text" placeholder="https://www.youtube.com/watch?v=...">
+            <button id="ytTranscribeBtn" class="success" style="margin-top:8px;">🎧 Transcribe YouTube</button>
+          </div>
+          <div class="access-field">
+            <label>Local Audio File</label>
+            <input id="filePath" type="text" placeholder="/path/to/audio.mp3" readonly>
+            <div class="access-actions" style="margin-top:6px;">
+              <button id="filePickBtn" class="secondary">📂 Pick File</button>
+              <button id="fileTranscribeBtn" class="success">🎧 Transcribe File</button>
+            </div>
+          </div>
+          <div class="access-field">
+            <label>Result</label>
+            <textarea id="mediaResult" style="min-height: 180px;" placeholder="Transcription will appear here"></textarea>
+          </div>
+        </div>
+        <div class="access-note">YouTube transcription requires yt-dlp installed on your system.</div>
       </div>
     </div>
 
@@ -925,6 +953,7 @@ function initApp() {
   initPqcKeys();
   initPqcDecrypt();
   initChecksumPanel();
+  initMediaTranscribe();
 }
 
 // DICTATION SYSTEM - Using Python + Whisper
@@ -1566,6 +1595,46 @@ function initChecksumPanel() {
 
   refreshBtn?.addEventListener('click', loadLog);
   loadLog();
+}
+
+function initMediaTranscribe() {
+  const ytBtn = document.getElementById('ytTranscribeBtn');
+  const ytInput = document.getElementById('ytUrl');
+  const fileBtn = document.getElementById('fileTranscribeBtn');
+  const pickBtn = document.getElementById('filePickBtn');
+  const filePathInput = document.getElementById('filePath');
+  const resultBox = document.getElementById('mediaResult');
+
+  if (!ytBtn || !fileBtn || !pickBtn) return;
+
+  ytBtn.addEventListener('click', async () => {
+    const url = ytInput?.value?.trim();
+    if (!url) { alert('Enter a YouTube URL'); return; }
+    resultBox.value = 'Transcribing YouTube...';
+    try {
+      const res = await window.electronAPI.transcribeYoutube({ url, model: 'large' });
+      resultBox.value = res.text || res.result || JSON.stringify(res);
+    } catch (err) {
+      resultBox.value = '❌ ' + (err?.message || err);
+    }
+  });
+
+  pickBtn.addEventListener('click', async () => {
+    const files = await window.electronAPI.pickFiles();
+    if (files && files[0]) filePathInput.value = files[0];
+  });
+
+  fileBtn.addEventListener('click', async () => {
+    const fp = filePathInput?.value?.trim();
+    if (!fp) { alert('Pick an audio file'); return; }
+    resultBox.value = 'Transcribing file...';
+    try {
+      const res = await window.electronAPI.transcribeFile({ filePath: fp, model: 'large' });
+      resultBox.value = res.text || res.result || JSON.stringify(res);
+    } catch (err) {
+      resultBox.value = '❌ ' + (err?.message || err);
+    }
+  });
 }
 
 // FOLDER MANAGEMENT
