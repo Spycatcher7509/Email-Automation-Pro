@@ -5,7 +5,7 @@ try { require('dotenv').config(); } catch (_) {}
 
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const { google } = require('googleapis');
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const fs = require('fs');
 const fsp = fs.promises;
 const path = require('path');
@@ -83,6 +83,13 @@ async function loadMediaLog() {
 
 async function saveMediaLog(entries) {
   await fsp.writeFile(MEDIA_LOG_PATH, JSON.stringify(entries, null, 2));
+}
+
+function ensureYtDlp() {
+  const r = spawnSync('yt-dlp', ['--version'], { encoding: 'utf8' });
+  if (r.error || r.status !== 0) {
+    throw new Error('yt-dlp not found. Install it (e.g., brew install yt-dlp) and ensure it is on PATH.');
+  }
 }
 
 /* ───────────────── ELECTRON ───────────────── */
@@ -697,13 +704,16 @@ ipcMain.handle('transcribe-file', async (_, { filePath, model }) => {
 
 ipcMain.handle('transcribe-youtube', async (_, { url, model }) => {
   if (!url) throw new Error('url required');
+  ensureYtDlp();
   const tmpDir = await fsp.mkdtemp(path.join(require('os').tmpdir(), 'yt-audio-'));
   const outFile = path.join(tmpDir, 'audio.mp3');
   // Require yt-dlp on PATH
   await new Promise((resolve, reject) => {
-    const dl = spawn('yt-dlp', ['-f', 'bestaudio', '--extract-audio', '--audio-format', 'mp3', '-o', outFile, url], { stdio: 'inherit' });
+    const dl = spawn('yt-dlp', ['-f', 'bestaudio', '--extract-audio', '--audio-format', 'mp3', '-o', outFile, url], { stdio: 'pipe' });
+    let stderr = '';
+    dl.stderr.on('data', (d) => { stderr += d.toString(); });
     dl.on('error', reject);
-    dl.on('close', (code) => code === 0 ? resolve() : reject(new Error(`yt-dlp exited with ${code}`)));
+    dl.on('close', (code) => code === 0 ? resolve() : reject(new Error(`yt-dlp exited with ${code}: ${stderr.trim()}`)));
   });
   try {
     const res = await runTranscribeCommand({ action: 'transcribe_file', file: outFile, model: model || 'large' });
