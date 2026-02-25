@@ -44,5 +44,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Media transcription
   transcribeYoutube: (payload) => ipcRenderer.invoke('transcribe-youtube', payload),
-  transcribeFile: (payload) => ipcRenderer.invoke('transcribe-file', payload)
+  transcribeFile: (payload) => ipcRenderer.invoke('transcribe-file', payload),
+  getMediaLog: () => ipcRenderer.invoke('get-media-log')
 });

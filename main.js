@@ -26,6 +26,7 @@ const SETTINGS_PATH = path.join(DATA_DIR, 'settings.json');
 const HYBRID_KEYS_PATH = path.join(DATA_DIR, 'hybrid-keys.json');
 const RECIPIENT_KEYS_PATH = path.join(DATA_DIR, 'recipient-keys.json');
 const CHECKSUM_LOG_PATH = path.join(DATA_DIR, 'checksums-log.json');
+const MEDIA_LOG_PATH = path.join(DATA_DIR, 'media-log.json');
 const CHECKSUM_LOG_PATH = path.join(DATA_DIR, 'checksums-log.json');
 const LOG_EMAIL = 'notification@thewrightsupport.com';
 const RESET_FROM = process.env.SENDGRID_FROM || 'no-reply@mail.yourparadigm.co.uk';
@@ -71,6 +72,18 @@ async function loadChecksumLog() {
 
 async function saveChecksumLog(entries) {
   await fsp.writeFile(CHECKSUM_LOG_PATH, JSON.stringify(entries, null, 2));
+}
+
+async function loadMediaLog() {
+  try {
+    return JSON.parse(await fsp.readFile(MEDIA_LOG_PATH, 'utf8'));
+  } catch {
+    return [];
+  }
+}
+
+async function saveMediaLog(entries) {
+  await fsp.writeFile(MEDIA_LOG_PATH, JSON.stringify(entries, null, 2));
 }
 
 /* ───────────────── ELECTRON ───────────────── */
@@ -672,6 +685,14 @@ ipcMain.handle('transcribe-audio', async (_, options) => {
 ipcMain.handle('transcribe-file', async (_, { filePath, model }) => {
   if (!filePath) throw new Error('filePath required');
   const res = await runTranscribeCommand({ action: 'transcribe_file', file: filePath, model: model || 'large' });
+  const log = await loadMediaLog();
+  log.push({
+    source: 'file',
+    target: filePath,
+    text: res.text || '',
+    gb_datetime: formatGbDateTime(),
+  });
+  await saveMediaLog(log);
   return res;
 });
 
@@ -687,10 +708,22 @@ ipcMain.handle('transcribe-youtube', async (_, { url, model }) => {
   });
   try {
     const res = await runTranscribeCommand({ action: 'transcribe_file', file: outFile, model: model || 'large' });
+    const log = await loadMediaLog();
+    log.push({
+      source: 'youtube',
+      target: url,
+      text: res.text || '',
+      gb_datetime: formatGbDateTime(),
+    });
+    await saveMediaLog(log);
     return res;
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
+});
+
+ipcMain.handle('get-media-log', async () => {
+  return await loadMediaLog();
 });
 
 ipcMain.handle('decrypt-envelope', async (_, { envelopePath, keysPath }) => {

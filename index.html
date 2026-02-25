@@ -412,6 +412,7 @@ button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2
         <div class="access-actions" style="margin: 6px 0 12px;">
           <button id="checksumPick" class="secondary">📂 Choose File</button>
           <button id="checksumRefresh" class="outline">🔄 Refresh</button>
+          <button id="checksumCopy" class="outline">📋 Copy Table</button>
         </div>
         <div style="overflow-x:auto;">
           <table style="width:100%; border-collapse:collapse; font-size:14px;" id="checksumTable">
@@ -421,6 +422,26 @@ button.outline { background: transparent; color: #1b2a6b; border: 2px solid #1b2
                 <th style="text-align:left; padding:8px; border-bottom:1px solid #e4e7f3;">SHA-256</th>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid #e4e7f3;">GB Date/Time</th>
                 <th style="text-align:left; padding:8px; border-bottom:1px solid #e4e7f3;">Path</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header"><div class="card-icon">🎧</div><h2 class="card-title">Media Transcription Log</h2></div>
+        <div class="access-actions" style="margin: 6px 0 12px;">
+          <button id="mediaLogRefresh" class="outline">🔄 Refresh</button>
+          <button id="mediaLogCopy" class="outline">📋 Copy Table</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:14px;" id="mediaLogTable">
+            <thead>
+              <tr style="background:#f7f7fb; color:#1b2a6b;">
+                <th style="text-align:left; padding:8px; border-bottom:1px solid #e4e7f3;">Source</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid #e4e7f3;">Target</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid #e4e7f3;">GB Date/Time</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid #e4e7f3;">Excerpt</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -954,6 +975,7 @@ function initApp() {
   initPqcDecrypt();
   initChecksumPanel();
   initMediaTranscribe();
+  initMediaLog();
 }
 
 // DICTATION SYSTEM - Using Python + Whisper
@@ -1594,6 +1616,12 @@ function initChecksumPanel() {
   });
 
   refreshBtn?.addEventListener('click', loadLog);
+  document.getElementById('checksumCopy')?.addEventListener('click', () => {
+    const rows = Array.from(tableBody.querySelectorAll('tr')).map(tr =>
+      Array.from(tr.children).map(td => td.textContent).join('\t')
+    );
+    navigator.clipboard.writeText(rows.join('\n'));
+  });
   loadLog();
 }
 
@@ -1635,6 +1663,50 @@ function initMediaTranscribe() {
       resultBox.value = '❌ ' + (err?.message || err);
     }
   });
+}
+
+function initMediaLog() {
+  const refreshBtn = document.getElementById('mediaLogRefresh');
+  const copyBtn = document.getElementById('mediaLogCopy');
+  const tableBody = document.querySelector('#mediaLogTable tbody');
+  if (!refreshBtn || !tableBody) return;
+
+  async function loadLog() {
+    const entries = await window.electronAPI.getMediaLog();
+    tableBody.textContent = '';
+    if (!entries || entries.length === 0) {
+      const row = document.createElement('tr');
+      const cell = document.createElement('td');
+      cell.colSpan = 4;
+      cell.textContent = 'No media transcriptions yet.';
+      cell.style.padding = '10px';
+      row.appendChild(cell);
+      tableBody.appendChild(row);
+      return;
+    }
+    entries.slice().reverse().forEach((e) => {
+      const row = document.createElement('tr');
+      const excerpt = (e.text || '').slice(0, 120) + ((e.text || '').length > 120 ? '…' : '');
+      [e.source, e.target, e.gb_datetime, excerpt].forEach((val) => {
+        const cell = document.createElement('td');
+        cell.style.padding = '8px';
+        cell.style.borderBottom = '1px solid #eceff6';
+        cell.textContent = val || '';
+        row.appendChild(cell);
+      });
+      tableBody.appendChild(row);
+    });
+  }
+
+  refreshBtn.addEventListener('click', loadLog);
+  copyBtn?.addEventListener('click', () => {
+    const rows = Array.from(tableBody.querySelectorAll('tr')).map(tr =>
+      Array.from(tr.children).map(td => td.textContent).join('\t')
+    );
+    navigator.clipboard.writeText(rows.join('\n'));
+  });
+
+  loadLog();
 }
 
 // FOLDER MANAGEMENT
